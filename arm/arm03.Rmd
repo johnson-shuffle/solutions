@@ -1,0 +1,277 @@
+---
+title: 'ARM: Chapter 3'
+output: html_document
+---
+
+### Question 1
+
+Import the data:
+```{r q1, message = F}
+dat <- read_delim(
+  'http://stat.columbia.edu/~gelman/arm/examples/pyth/exercise2.1.dat',
+  delim = ' '
+  )
+```
+
+#### (a)
+```{r q1a}
+reg <- lm(y ~ x1 + x2, data = dat[1:40, ]) ; summary(reg)
+```
+
+#### (b)
+```{r q1b}
+dat_long <- gather(dat[1:40, ], covar, value, -y)
+
+p <- ggplot(dat_long) +
+  geom_point(aes(value, y)) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1] + mean(dat$x2[1:40]), 
+      slope = reg$coefficients[2],
+      col = 'red'
+      ),
+    data = filter(dat_long, covar == 'x1')
+    ) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1] + mean(dat$x1[1:40]), 
+      slope = reg$coefficients[3],
+      col = 'red'
+      ),
+    data = filter(dat_long, covar == 'x2')
+    ) +
+  facet_grid(~covar) +
+  theme(legend.position = "none")
+p
+```
+
+#### (c)
+```{r, q1c, warning = F}
+dat <- dat %>%
+  mutate(
+    pred  = predict(reg, newdata = dat),
+    resid = y - pred
+  )
+
+dat_long <- gather(dat[1:40, ], covar, value, -y, -pred, -resid)
+
+p1 <- ggplot(dat_long) +
+  geom_point(aes(x = value, y = resid)) +
+  facet_grid(~covar)
+p1
+
+p2 <- ggplot(dat) +
+  geom_point(aes(x = pred, y = resid))
+p2
+```
+
+#### (d)
+```{r, q1d, warning = F}
+p <- ggplot(dat) +
+  geom_point(aes(x = pred, y = y)) +
+  geom_abline(intercept = 0, slope = 1)
+p
+```
+
+### Question 2
+
+#### (a)
+The log earnings model is given by:
+$$
+\begin{aligned}
+\ln(earnings) = a + b \times \ln(height)
+\end{aligned}
+$$
+
+The first two bullet points imply that $a = 6.96$ and $b = 0.8$.  The third bullet point implies that:
+$$
+\ln(y) \leq \ln(\hat y) + 1.96 \hat \sigma \\
+$$
+
+and also that:
+$$
+\begin{align}
+y &\leq 1.1 \hat y \\
+\ln(y) &\leq \ln(\hat y) + \ln(1.1)
+\end{align}
+$$
+Combining we have:
+```{r q2a, echo = F}
+sigma <- log(1.1) / 1.96
+```
+$$
+\begin{align}
+1.96 \hat \sigma &= \ln(1.1) \\
+\hat \sigma &= `r sigma`
+\end{align}
+$$
+
+#### (b)
+Given that $s = 0.5$ we have that:
+```{r q2b, echo = F}
+R2 <- 1 - ((log(1.1) / 1.96) / 0.05) ^ 2
+```
+$$
+R^2 = 1 - \frac{\hat \sigma^2}{s^2} = `r R2`
+$$
+
+### Question 3
+
+#### (a)
+```{r q3a}
+var1 <- rnorm(1000, 0, 1)
+var2 <- rnorm(1000, 0, 1)
+
+reg <- lm(var2 ~ var1) ; summary(reg)
+```
+The slope coefficient is not statistically significant.
+
+#### (b)
+```{r q3b}
+q3b <- function(trials) {
+  set.seed(trials)
+  var1 <- rnorm(1000, 0, 1)
+  var2 <- rnorm(1000, 0, 1)
+
+  reg <- lm(var2 ~ var1) %>% summary()
+  reg$coefficients[2, 1] / reg$coefficients[2, 2]
+}
+
+dat <- map_dbl(1:100, q3b)
+
+table(abs(dat) >= 2)['TRUE']
+```
+
+### Question 4
+
+Import the data:
+```{r q4, warning = F}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/child.iq/child.iq.dta'
+  )
+```
+
+#### (a)
+```{r q4a}
+reg <- lm(ppvt ~ momage, data = dat) ; summary(reg)
+
+p1 <- ggplot(dat) +
+  geom_point(aes(momage, ppvt)) +
+  geom_abline(
+    intercept = reg$coefficients[1],
+    slope = reg$coefficients[2],
+    col = 'red'
+    )
+p1
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg),
+    resid = ppvt - pred
+  )
+
+p2 <- ggplot(dat) +
+  geom_point(aes(momage, resid))
+p2
+
+p3 <- ggplot(dat) +
+  geom_point(aes(pred, resid))
+p3
+```
+
+Residual plots indicate the assumptions of the model hold.  The slope coefficient inidcates that a one year increase in mother's age is associated with an increase in test score of 0.840; this coefficient is also significantly different from zero.  On the basis of this coefficient alone, a mother should wait until as long as possible to have a child.  Of course, this ingnores all sorts of other factors; for example, it becomes more difficult to get pregnant as a woman ages.
+
+#### (b)
+```{r q4b}
+reg <- lm(ppvt ~ momage + educ_cat, data = dat) ; summary(reg)
+```
+
+The slope cofficient on age decreases to 0.343; however, it is no longer statistically significant from zero.  The slope coffiecient on education category indicates that moving up one category is associated with an increase in test score of 4.711; this coefficent is significantly different from zero.
+
+#### (c)
+```{r q4c}
+dat$momhs <- 0
+dat$momhs <- replace(dat$momhs, dat$educ_cat != 1, 1)
+
+reg <- lm(ppvt ~ momage + momage:momhs, data = dat) ; summary(reg)
+
+p <- ggplot(dat) +
+  geom_point(aes(momage, ppvt)) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1],
+      slope = reg$coefficients[2],
+      col = 'red'
+    ),
+    data = filter(dat, momhs == 0)
+  ) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1],
+      slope = reg$coefficients[2] + reg$coefficients[3],
+      col = 'red'
+    ),
+    data = filter(dat, momhs == 1)
+  ) +
+  facet_grid(~momhs) +
+  theme(legend.position="none")
+p
+```
+
+#### (d)
+```{r q4d}
+reg <- lm(ppvt ~ momage + educ_cat, data = dat[1:200, ])
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, newdata = dat)
+  )
+
+p <- ggplot(dat[201:400, ]) +
+  geom_point(aes(pred, ppvt)) +
+  geom_abline(intercept = 0, slope = 1)
+p
+            
+```
+
+### Question 5
+
+Import the data:
+```{r q5, message = F}
+dat <- read_csv(
+  'http://stat.columbia.edu/~gelman/arm/examples/beauty/ProfEvaltnsBeautyPublic.csv'
+  )
+```
+
+#### (a)
+Without a description of the dataset it is difficult to come up with a model.  Here we choose the standardized average beauty score, an indicator for female, and an indicator for minority as predictors:
+```{r q5a}
+reg <- lm(courseevaluation ~ btystdave + female + minority, data = dat)
+summary(reg)
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, data = dat),
+    resid = courseevaluation - pred
+  )
+
+p <- ggplot(dat) +
+  geom_point(aes(pred, resid))
+p
+```
+
+A one point in increase in beauty score for any instructor is associated with a 0.1494 increase in course evaluation score.  A male and non-minority instructor with a standardized beauty score of zero receives, on average, a course evaluation score of 4.1056.  A female and non-minority instructor with a standardized beauty score of zero receives, on average, a course evaluation score of 3.92.  These averages decline by 0.1033 for minority instructors.
+
+The residual standard error in this case is 0.537; this suggests that the model can predict course evaluation score to within a half a point.
+
+#### (b)
+Let's consider one additional model where the interaction of the beauty score and the indicator for female is added as a predictator:
+```{r q5b}
+reg <- lm(
+  courseevaluation ~ btystdave + female + minority + btystdave:female, 
+  data = dat
+  )
+summary(reg)
+```
+
+The inputs correspond to the predictors used in part (a).  We see similar results to (a) but are able to determine that the influence of beauty score on evaulation score does not depend on gender; this is supported by the fact the coefficient for the interaction term is not statistically different from zero. 
