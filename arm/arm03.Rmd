@@ -61,14 +61,14 @@ p1 <- ggplot(dat_long) +
 p1
 
 p2 <- ggplot(dat) +
-  geom_point(aes(x = pred, y = resid))
+  geom_point(aes(pred, resid))
 p2
 ```
 
 #### (d)
 ```{r, q1d, warning = F}
 p <- ggplot(dat) +
-  geom_point(aes(x = pred, y = y)) +
+  geom_point(aes(pred, y)) +
   geom_abline(intercept = 0, slope = 1)
 p
 ```

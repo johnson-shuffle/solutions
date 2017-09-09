@@ -46,7 +46,8 @@ So person of average height earns \$`r format(reg$coefficients[1], nsmall = 2, b
 Skip
 
 ### Question 3
-Create similiar dataset and models:
+
+Create similar dataset and models:
 ```{r q3}
 
 # age (the original paper indicates the survey was conducted in 1990)
@@ -115,3 +116,141 @@ p <- ggplot(dat) +
   theme(legend.position = 'none')
 p
 ```
+
+### Question 4
+Import the data:
+```{r q4}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/pollution/pollution.dta'
+  )
+```
+
+#### (a)
+```{r q4a}
+p1 <- ggplot(dat) +
+  geom_point(aes(nox, mort))
+p1
+
+reg <- lm(mort ~ nox, data = dat) ; summary(reg)
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, data = dat),
+    resid = mort - pred
+  )
+
+p2 <- ggplot(dat) +
+  geom_point(aes(pred, resid))
+p2
+```
+
+Linearity seems like a stretch here.  The outlier where nox is 319 results in a poor fit.  The residual plot confirms this approach is problematic.
+
+#### (b)
+Let's try using the log of nox:
+```{r q4b}
+p1 <- ggplot(dat) +
+  geom_point(aes(log(nox), mort))
+p1
+
+reg <- lm(mort ~ log(nox), dat = dat) ; summary(reg)
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, data = dat),
+    resid = mort - pred
+  )
+
+p2 <- ggplot(dat) +
+  geom_point(aes(pred, resid))
+p2
+
+```
+
+This works better.
+
+#### (c)
+A one percent increase in nox is associated with an increase of mortality of `r format(reg$coefficients[2], nsmall = 1)`.
+
+#### (d)
+```{r q4d}
+dat_long <- gather(dat, poll, value, hc:so2)
+
+p1 <- ggplot(dat_long) +
+  geom_point(aes(value, mort)) +
+  facet_grid(~poll)
+p1
+
+reg <- lm(mort ~ log(hc) + log(nox) + log(so2), data = dat) ; summary(reg)
+
+p2 <- ggplot(dat_long) +
+  geom_point(aes(log(value), mort)) +
+  facet_grid(~poll) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1] + log(mean(dat$nox) + log(mean(dat$so2))),
+      slope = reg$coefficients[2]
+    ),
+    col = 'red',
+    data = filter(dat_long, poll == 'hc')
+  ) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1] + log(mean(dat$hc) + log(mean(dat$so2))),
+      slope = reg$coefficients[3]
+    ),
+    col = 'red',
+    data = filter(dat_long, poll == 'nox')
+  ) +
+  geom_abline(
+    aes(
+      intercept = reg$coefficients[1] + log(mean(dat$hc) + log(mean(dat$nox))),
+      slope = reg$coefficients[4]
+    ),
+    col = 'red',
+    data = filter(dat_long, poll == 'so2')
+  )
+p2
+```
+
+Given a single pollutant with the levels of the other two fixed (perhaps at their mean values), the coefficients correspond to the change in mortality for a one percent change in the given pollutant.
+
+#### (e)
+```{r q4e}
+reg <- lm(mort ~ log(hc) + log(nox) + log(so2), data = dat[1:30, ]) ; summary(reg)
+
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, newdata = dat),
+    resid = mort - pred,
+    code = c(rep('train', 30), rep('test', 30))
+  )
+
+p <- ggplot(dat) +
+  geom_point(aes(pred, mort, colour = code)) +
+  geom_abline(intercept = 0, slope = 1)
+p
+```
+
+### Question 5
+
+#### (a)
+* This measure implicitly assumes that a dollar has the same impact on vote share across districts.  This is likely unrealistic; for example, advertising costs are likely to vary by district.
+* This measure improves on the last but may be problematic in uncontested districts; it also may be skewed by noncompetitive districts.
+* This measure improves on the last in terms of skewness but still may be problematic in uncontested districts.
+* This measure seems the best as it is standardized, ranging between 0 and 1, and has a clear demarcation at one half where the candidates raise equal amounts. 
+
+#### (b)
+One possiblity would be to use the last measure $M_i = D_i / (D_i + R_i)$ but introduce nonlinearity via a $\beta$ regression.
+
+### Question 6
+
+This represents an elasticity.  Most likely the authors meant $\beta = -0.3$; economists often consider elasticities in absolute terms.  This means that a one percent increase in price is associated with a 0.3 decrease in quantity.  As expected, demand for cigarettes is inelastic.
+
+### Question 7
+
+Skip
+
+### Question 8
+
+Skip
