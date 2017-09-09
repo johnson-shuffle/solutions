@@ -4,3 +4,114 @@ output: html_document
 ---
 
 ### Question 1
+
+#### (a)
+The factors are $e^{-0.25}$ and $e^{0.25}$.
+
+#### (b)
+Import the height data used in Chapter 4, simulate weights, and plot:
+```{r q1b, warning = F}
+set.seed(1)
+
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/earnings/heights.dta'
+  )
+
+dat$weight <- exp(-3.5 + 2 * log(dat$height) + rnorm(nrow(dat), 0, 0.25))
+
+p <- ggplot(dat) +
+  geom_point(aes(log(height), log(weight))) +
+  geom_abline(aes(intercept = -3.5, slope = 2), col = 'red')
+p
+```
+
+### Question 2
+
+#### (a)
+Remove missing values from the data:
+```{r q2a}
+# dat <- na.omit(dat)
+```
+
+#### (b)
+Center height:
+```{r q2b}
+dat$height_c <- dat$height - mean(dat$height, na.rm = T)
+
+reg <- lm(earn ~ height_c, data = dat) ; summary(reg)
+```
+So person of average height earns \$`r format(reg$coefficients[1], nsmall = 2, big.mark = ',')` on average.
+
+#### (c)
+Skip
+
+### Question 3
+Create similiar dataset and models:
+```{r q3}
+
+# age (the original paper indicates the survey was conducted in 1990)
+dat$age <- 90 - dat$yearbn
+dat$age[dat$age <= 0] <- 1990 - (1800 + dat$yearbn[dat$age <= 0])
+
+# age bins
+dat <- dat %>%
+  mutate(
+    age_10  = age / 10,
+    age_bin = NA,
+    age_bin = replace(age_bin, age <= 29, 'age18_29'),
+    age_bin = replace(age_bin, age >= 30 & age <= 44, 'age30_44'),
+    age_bin = replace(age_bin, age >= 45 & age <= 64, 'age45_64'),
+    age_bin = replace(age_bin, age >= 65, 'age65_up')
+  )
+
+# models
+reg1 <- lm(weight ~ age_10, data = dat)
+reg2 <- lm(weight ~ age_10 + I(age_10 ^ 2), data = dat)
+reg3 <- lm(weight ~ factor(age_bin), data = dat)
+```
+
+#### (a) to (b)
+```{r q3a, warning = F}
+
+reg2_fun <- function(x) (-0.0157) / 100 * x ^ 2 + (-2.13) / 10 * x + 148
+
+p <- ggplot(dat) +
+  geom_point(aes(age, weight)) +
+  geom_abline(
+    aes(intercept = reg1$coefficients[1], slope = reg1$coefficients[2] / 10),
+    col = 'red'
+  ) +
+  stat_function(fun = reg2_fun, colour = 'blue')
+p
+```
+
+#### (c)
+```{r q3c, warning = F}
+p <- ggplot(dat) + 
+  geom_point(data = select(dat, age, weight), aes(age, weight), colour = 'grey') +
+  geom_point(aes(age, weight, colour = age_bin)) +
+  scale_colour_manual(values = c("yellow", "green", "blue", "red")) +
+  geom_hline(
+    aes(yintercept = reg3$coefficients[1]),
+    col = 'yellow',
+    data = filter(dat, age_bin == 'age18_29')
+  ) +
+  geom_hline(
+    aes(yintercept = reg3$coefficients[1] + reg3$coefficients[2]),
+    col = 'green',
+    data = filter(dat, age_bin == 'age30_44')
+  ) +
+  geom_hline(
+    aes(yintercept = reg3$coefficients[1] + reg3$coefficients[3]),
+    col = 'blue',
+    data = filter(dat, age_bin == 'age45_64')
+  ) +
+  geom_hline(
+    aes(yintercept = reg3$coefficients[1] + reg3$coefficients[4]),
+    col = 'red',
+    data = filter(dat, age_bin == 'age65_up')
+  ) +
+  facet_grid(~age_bin) +
+  theme(legend.position = 'none')
+p
+```
