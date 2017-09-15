@@ -1,0 +1,421 @@
+---
+title: 'ARM: Chapter 5'
+output: html_document
+---
+
+```{r} 
+knitr::opts_chunk$set(cache = F, message = F, warning = F)
+```
+### Question 1
+
+Import the data:
+
+```{r q1}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
+  )
+```
+
+#### (a)
+Unfortunately, the data is not accompanied by a description of the variables.
+
+```{r q1a}
+
+# presvote_intent(1 = Clinton, 2 = Bush)
+dat_92 <- dat %>% 
+  filter(year == 1992) %>%
+  mutate(
+    presvote = replace(presvote_2party, presvote_2party != 2, 0),
+    presvote = presvote / 2
+  )
+
+# partyid7 (1 = strong Democrat... 7 = strong Republican)
+# ideo7 (1 = strong liberal... 7 = strong Conservative)
+# educ3 (1 = no high school... 4 = college graduate)
+mod <- 'presvote ~ income + female + white + educ3 + partyid7'
+reg <- glm(as.formula(mod), family = binomial(link = 'logit'), data = dat_92)
+summary(reg)
+
+# add residuals
+dat_92 <- dat_92 %>%
+  mutate(
+    pred = predict(reg, newdata = dat_92, type = 'response'),
+    resid = presvote - pred
+  )
+
+# bin the data
+bins <- quantile(dat_92$pred, probs = seq(0, 1, 0.05), na.rm = T)
+dat_92 <- dat_92 %>%
+  mutate(
+    pred_bin = cut(pred, bins, include.lowest = T)
+    ) %>%
+  group_by(pred_bin) %>%
+  mutate_at(vars(pred, resid), mean, na.rm = T) %>%
+  ungroup()
+
+# summarise and add standard errors
+dat_bin <- dat_92 %>%
+  count(pred, resid) %>%
+  mutate(
+    lower = -2 * sqrt(pred * (1 - pred) / n),
+    upper = 2 * sqrt(pred * (1 - pred) / n)
+  )
+
+# plot
+p <- ggplot(dat_bin) +
+  geom_point(aes(pred, resid)) +
+  geom_line(aes(pred, lower)) +
+  geom_line(aes(pred, upper))
+p
+
+table(abs(dat_bin$resid) < dat_bin$upper)
+```
+
+#### (b)
+The above model has coefficients consistent with expecation: weathly white Republican respondents are more likely to support Bush.  Conversely, more educated and female respondents are more likely to support to Clinton.
+
+The binned residual plot suggests the model has problems; only half of the predictions are consistent with the model being true.
+
+#### (c)
+Skip
+
+### Question 2
+
+Skip
+
+### Question 3
+
+The model is given by:
+$$
+\text{Pr}(\text{graduation}_i = 1) = \text{logit}^{-1} \left( \alpha + \beta \times \text{income}_i \right)
+$$
+and we are given the information that:
+$$
+\begin{align}
+0.27 &= \text{logit}^{-1} \left( \alpha \right) \\
+0.81 &= \text{logit}^{-1} \left (\alpha + \beta \times 6 \right)
+\end{align}
+$$
+which implies:
+$$
+\begin{align}
+\alpha &= \ln(0.27) - \ln(1 - 0.27) = `r log(0.27) - log(1 - 0.27)` \\
+\beta &= \frac{1}{6} \times \left[ \ln(0.81) - \ln(1 - 0.81) - \alpha \right] = `r log(0.81) - log(1 - 0.81) - log(0.27) + log(1 - 0.27)`
+\end{align}
+$$
+
+### Question 4
+
+Skip
+
+### Question 5
+
+#### (a) 
+Steps to create consistent data:
+
+1. Simulate test scores
+2. Simulate the value for the linear predictor (which includes error following a logistic distribution)
+3. Predict the probability of passing
+4. Classify as pass or fail using the probability and a 0.5 cutoff
+
+```{r q5a}
+set.seed(1)
+
+dat <- tibble(score = rnorm(50, 60, 15)) %>%
+  mutate(
+    pred = -24 + 0.4 * score + rlogis(50, 0, 1),
+    pass = 1,
+    pass = replace(pass, pred < 0, 0)
+  )
+
+p <- ggplot(dat) +
+  geom_point(aes(score, pass)) +
+  stat_function(fun = function(x) {1 / (1 + exp(24 - 0.4 * x))}, col = 'red')
+p
+```
+
+#### (b)
+The transformation is given by:
+$$
+Z = \frac{X - 60}{15}
+$$
+with the fitted model being:
+$$
+\text{Pr} (\text{pass}) = \text{logit}^{-1} (\beta' z)
+$$
+Recall that $z=0$ implies a test score of 60 which translates to $\text{Pr} (\text{pass}) = 0$; hence, the model has no constant term.  Substituting we have:
+$$
+\text{Pr} (\text{pass}) = - 1.6 + \underbrace{(0.027 \times \beta')}_{=\beta} x
+$$
+so that:
+$$
+\beta' = \frac{0.4}{0.027} 
+$$
+
+```{r q5b} 
+dat <- dat %>% 
+  mutate(
+    trans = (score - 60) / 15
+  )
+
+p <- ggplot(dat) +
+  geom_point(aes(trans, pass)) +
+  stat_function(fun = function(z) 1 / (1 + exp(-14.8 * z)), col = 'red')
+p
+```
+
+#### (c)
+
+```{r q5c}
+dat <- dat %>% mutate(noise = score + rnorm(50, 0, 1))
+
+reg1 <- glm(pass ~ score, data = dat, family = binomial(link = 'logit'))
+reg2 <- glm(pass ~ score + noise, data = dat, family = binomial(link = 'logit'))
+
+summary(reg1)$deviance - summary(reg2)$deviance
+```
+There is a small change in deviance but less than one.
+
+### Question 6
+
+```{r q6_1}
+
+# simulate latent values
+latent = rlogis(1E6, 1 + 2 * 1 + 3 * 0.5, 1)
+
+# construct density
+dens <- tibble(late = density(latent)$x, dens = density(latent)$y)
+```
+
+The proability that $y = 1$ is given by:
+$$
+\text{Pr}(y = 1) = 1 - \text{Pr}(y \leq 0) = \text{Pr}(\epsilon \leq -4.5)
+$$
+where $\epsilon \sim \text{Logistic}(0, 1)$.  Hence:
+$$
+\text{Pr}(\epsilon \leq -4.5) = 1 - \frac{1}{1 + e ^ {4.5}} = 0.989
+$$
+
+```{r q6_2}
+
+# construct data for polygon where y = 1
+cutoff <- min(abs(dens$late) - 0)
+area <- rbind(
+  c(cutoff, 0),
+  filter(dens, late > 0),
+  c(max(dens$late), 0)
+)
+
+# plot
+p <- ggplot(dens) +
+  geom_line(aes(late, dens)) +
+  geom_polygon(aes(late, dens), data = area, fill = 'red', alpha = 0.5)
+p
+```
+
+### Question 7
+
+```{r q7}
+dat <- tibble(x = 1:20, y = rep(c(rep(1, 5), rep(0, 5)), 2))
+
+reg <- glm(y ~ x, data = dat, family = binomial(link = 'logit'))
+summary(reg)
+```
+
+### Question 8
+
+Import the data:
+```{r q8, warning = F, message = F}
+dat <- read_delim(
+  'http://stat.columbia.edu/~gelman/arm/examples/rodents/rodents.dat',
+  delim = ' '
+  )
+```
+
+#### (a)
+We will disregard race = 7 and treat the variable as categorical:
+
+```{r q8a}
+reg <- glm(
+  rodent2 ~ factor(race), 
+  data = filter(dat, race != 7), 
+  family = binomial(link = 'logit')
+  )
+summary(reg)
+```
+
+Non-whites have between approximately between an 8\% and 18\% higher probability of having rodents present.
+
+#### (b)
+
+```{r q8b}
+reg <- glm(
+  rodent2 ~ totincom2 + factor(race) + totincom2:factor(race), 
+  data = filter(dat, race != 7), 
+  family = binomial(link = 'logit')
+  )
+summary(reg)
+```
+
+### Question 9
+
+Import the dat:
+```{r q9}
+dat <- read.table(
+  'http://stat.columbia.edu/~gelman/arm/examples/arsenic/wells.dat'
+)
+```
+
+#### (a)
+
+```{r q9a}
+reg <- glm(
+  switch ~ log(dist), 
+  data = dat, 
+  family = binomial(link = 'logit')
+  )
+summary(reg)
+```
+
+#### (b)
+
+```{r q9b}
+dat <- dat %>%
+  mutate(
+    pred = predict(reg, newdata = dat, type = 'response'),
+    log_dist = log(dist),
+    resid = switch - pred
+  )
+
+cf <- reg$coefficients
+
+p <- ggplot(dat) +
+  geom_point(aes(log_dist, pred)) +
+  stat_function(fun = function(x) 1 / (1 + exp(-cf[1] - cf[2] * x)), col = 'red')
+p
+```
+
+#### (c)
+
+```{r q9c}
+
+# bin the data
+bins <- quantile(dat$pred, probs = seq(0, 1, 0.01), na.rm = T)
+dat <- dat %>%
+  mutate(
+    pred_bin = cut(pred, bins, include.lowest = T)
+    ) %>%
+  group_by(pred_bin) %>%
+  mutate_at(vars(pred, resid), mean, na.rm = T) %>%
+  ungroup()
+
+# summarise and add standard errors
+dat_bin <- dat %>%
+  count(pred, resid) %>%
+  mutate(
+    lower = -2 * sqrt(pred * (1 - pred) / n),
+    upper = 2 * sqrt(pred * (1 - pred) / n)
+  )
+
+# plot
+p <- ggplot(dat_bin) +
+  geom_point(aes(pred, resid)) +
+  geom_line(aes(pred, lower)) +
+  geom_line(aes(pred, upper))
+p
+```
+
+#### (d)
+
+```{r q9d}
+x <- dat$pred > 0.5 & dat$switch == 0
+y <- dat$pred < 0.5 & dat$switch == 1
+e_rate <- mean(x | y, na.rm = T)
+t_null <- table(dat$switch)
+e_null <- min(t_null['0'], t_null['1']) / (t_null['0'] + t_null['1'])
+names(e_null) <- NULL
+```
+
+Using the error rates, there is only a modest improvement over the null model.
+#### (e)
+Skip
+
+### Question 10
+
+####(a)
+
+```{r q10a}
+reg <- glm(
+  switch ~ dist + log(arsenic), 
+  data = dat, 
+  family = binomial(link = 'logit')
+  )
+summary(reg)
+
+cf <- coef(reg)
+```
+
+The baseline probability of switching -- a distance of zero and the minimum arsenic level -- is `r 1 / (1 + exp(-cf[1] - cf[3] * min(log(dat$arsenic))))`.  A 100 meter increase in the distance to the nearest safe well is associated with a `r abs(cf[2] * 100 / 4)` change in the probability of switching.  A one percent increase in arsenic level is associated with a `r cf[3] / 4` change in the probability of switching.
+
+#### (b)
+
+```{r q10b}
+p1 <- ggplot(dat) +
+  geom_point(aes(dist, switch)) +
+  stat_function(
+    fun = function(x) 1 / (1 + exp(-cf[1] - cf[2] * x - cf[3] * log(0.5))),
+    col = 'red'
+    ) +
+  stat_function(
+    fun = function(x) 1 / (1 + exp(-cf[1] - cf[2] * x - cf[3] * log(1))),
+    col = 'blue'
+    )
+p1
+
+p2 <- ggplot(dat) +
+  geom_point(aes(arsenic, switch)) +
+  stat_function(
+    fun = function(x) 1 / (1 + exp(-cf[1] - cf[2] * 0 - cf[3] * log(x))),
+    col = 'red'
+    ) +
+  stat_function(
+    fun = function(x) 1 / (1 + exp(-cf[1] - cf[2] * 50 - cf[3] * log(x))),
+    col = 'blue'
+    )
+p2
+```
+
+#### (c)
+Skip
+
+### Question 11
+
+```{r q11}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
+  )
+
+dat_64 <- dat %>%
+  filter(year == 1964) %>%
+  mutate(
+    presvote = replace(presvote_2party, presvote_2party != 2, 0),
+    presvote = presvote / 2
+  )
+
+reg <- glm(
+  presvote ~ female + black + income, 
+  data = dat_64,
+  family = binomial(link = 'logit')
+)
+summary(reg)
+
+dat_64 <- dat_64 %>%
+  mutate(
+    pred = predict(reg, newdata = dat_64, type = 'response')
+  )
+
+p <- ggplot(dat_64) +
+  geom_point(aes(pred, presvote))
+p
+```
+

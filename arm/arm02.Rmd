@@ -46,7 +46,10 @@ $$
 
 Import the data:
 ```{r q2, results = F}
-dat <- read_lines('http://stat.columbia.edu/~gelman/arm/examples/girls/births.txt')
+dat <- read_lines(
+  'http://stat.columbia.edu/~gelman/arm/examples/girls/births.txt'
+  )
+
 dat[4] <- "month\ttotal births\t\tproportion girls" 
 dat[6] <- "Feb\t\t\t.4875"
 dat[7] <- "Mar\t\t\t.4859"
