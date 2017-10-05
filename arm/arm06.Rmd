@@ -1,0 +1,347 @@
+---
+title: 'ARM: Chapter 6'
+output: html_document
+---
+
+```{r arm06-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'arm_cache/',
+  fig.path = 'arm_fig/',
+  message = F,
+  warning = F
+  )
+load_tidy()
+library(arm)
+```
+
+### Question 1
+
+Import the data:
+
+```{r arm06-q01}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta'
+)
+```
+
+
+#### (a)
+
+```{r arm06-q01a}
+dat %<>% mutate_at(vars(fupacts, bupacts), as.integer)
+dat %<>% filter(bupacts != 0)
+
+rega <- glm(
+  fupacts ~ couples + women_alone, 
+  data = dat,
+  family = poisson(link = 'log'),
+  offset = log(bupacts)
+  )
+summary(rega)
+
+fu_hat <- predict(rega, type = 'response')
+z <- (dat$fupacts - fu_hat) / sqrt(fu_hat)
+pchisq(sum(fu_hat ^ 2), 420 - 3)
+```
+
+Based on the reduction in deviance, the model does help explain the reduction in ``number of unprotected sex acts."  However, the overdispersion factor is `r sum(z ^ 2) / 417` which is huge.
+
+#### (b)
+
+```{r arm06-q01b}
+regb <- glm(
+  fupacts ~ couples + women_alone + sex + bs_hiv, 
+  data = dat,
+  family = poisson(link = 'log'),
+  offset = log(bupacts)
+  )
+summary(regb)
+
+fu_hat <- predict(regb, type = 'response')
+z <- (dat$fupacts - fu_hat) / sqrt(fu_hat)
+pchisq(sum(z ^ 2), 420 - 4)
+```
+
+Presumably, inclusion of pre-treatment measure of the outcome means adding `bupacts` as an offset.  Adding baseline HIV status does not affect the previous coefficients.  Futhermore, the coefficient on HIV status seems plausible and is statistically significant.  However, the overdispersion factor is `r sum(z ^ 2) / 416` which is huge.
+
+#### (c)
+
+```{r arm06-q01c}
+regc <- glm(
+  fupacts ~ couples + women_alone + sex + bs_hiv, 
+  data = dat,
+  family = quasipoisson(link = 'log'),
+  offset = log(bupacts)
+  )
+summary(regc)
+```
+
+The intervention is justified and the results (with regard to treatment) appear robust.
+
+#### (d)
+
+If responses from both the man and the woman in a couple are being included then this is a problem since these observations will be correlated and not i.i.d.
+
+### Question 2
+
+Import the data and estimate the model given by:
+$$
+z_{i} = X \beta  + \epsilon_{i}
+$$
+$$
+y_{i} = \begin{cases} 
+D &\text{ if } z_{i} \lt c_{D|I} \\ 
+I &\text{ if } z_{i} \in (c_{D|I}, c_{I|R}) \\ 
+R &\text{ if } z_{i} \gt c_{I|R}
+\end{cases}
+$$
+
+```{r arm06-q02}
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
+  )
+
+# partyid3 (1 = Democrat, 2 = Independent, 3 = Republican, 4 = Apolitical)
+# ideo (1 = liberal 3 = moderate, 5 = conservative)
+# educ3 (1 = no high school... 4 = college graduate)
+
+reg <- polr(
+  factor(partyid3) ~ income + female + white + black + educ3 + ideo,
+  data = filter(dat, partyid3 != 9)
+  )
+```
+
+#### (a)
+
+```{r arm06-q02a}
+summary(reg)
+
+exp_fun <- function(x, c_di, c_ir) {
+  p1 <- invlogit(c_di - x)
+  p2 <- invlogit(c_ir - x)
+  p1 + 2 * (p2 - p1) + 3 * (1 - p2)
+}
+
+pdat <- tibble(
+  partyid3 = as.numeric(model.frame(reg)[, 1]),
+  lpred = as.numeric(as.matrix(model.frame(reg)[, 2:7]) %*% reg$coefficients)
+)
+
+p <- ggplot(pdat) +
+  geom_jitter(aes(lpred, partyid3), alpha = 0.5) +
+  geom_segment(
+    x = reg$zeta[1], xend = reg$zeta[1],
+    y = 1, yend = 2,
+    col = 'green', 
+    size = 1
+    ) +
+  geom_segment(
+    x = reg$zeta[2], xend = reg$zeta[2],
+    y = 2, yend = 3,
+    col = 'yellow', 
+    size = 1
+    ) +
+  stat_function(
+    fun = exp_fun,
+    args = list(c_di = reg$zeta[1], c_ir = reg$zeta[2]),
+    col = 'red',
+    size = 1
+  ) +
+  labs(x = 'linear predictor', y = 'party id')
+p
+```
+
+#### (b)
+
+Skip
+
+#### (c)
+
+The variance of an individual observation is:
+$$
+\sigma^2 = p_D + 4 p_I + 9 p_R - \left( p_D + 2 p_I + 3 p_R \right)^2
+$$
+so that the standard error for a sample of size $n$ is:
+$$
+s = \sqrt{\frac{\sigma}{n}}
+$$
+
+```{r arm06-q02c}
+pdat <- cbind(pdat, data.frame(predict(reg, type = 'probs')))
+names(pdat)[3:5] <- c('probD', 'probI', 'probR')
+pdat %<>% 
+  mutate(
+    pred = probD + 2 * probI + 3 * probR,
+    resid = partyid3 - pred
+    )
+
+bins <- quantile(pdat$pred, probs = seq(0, 1, 0.02), na.rm = T)
+
+pdat <- pdat %>%
+  mutate(
+    pred_bin = cut(pred, bins, include.lowest = T)
+  ) %>%
+  group_by(pred_bin) %>%
+  mutate_at(vars(contains('prob'), pred, resid), mean, na.rm = T) %>%
+  ungroup()
+
+var_fun <- function(p1, p2, p3) {
+  (p1 + 4 * p2 + 9 * p3) - (p1 + 2 * p2 + 3 * p3) ^ 2
+}
+
+pdat_bin <- pdat %>%
+  count(probD, probI, probR, pred, resid) %>%
+  mutate(
+    lower = -2 * sqrt(var_fun(probD, probI, probR) / n),
+    upper =  2 * sqrt(var_fun(probD, probI, probR) / n)
+  )
+
+p <- ggplot(pdat_bin) +
+  geom_point(aes(pred, resid)) +
+  geom_line(aes(pred, lower)) +
+  geom_line(aes(pred, upper))
+p
+
+table(abs(pdat_bin$resid) < pdat_bin$upper)
+```
+
+### Question 3
+
+```{r arm06-q03}
+dat_92 <- dat %>% 
+  filter(year == 1992) %>%
+  mutate(
+    presvote = replace(presvote_2party, presvote_2party != 2, 0),
+    presvote = presvote / 2
+  )
+
+regp <- glm(
+  presvote ~ income + female + white + educ3 + partyid7,
+  family = binomial(link = 'probit'),
+  data = dat_92
+  )
+
+regl <- glm(
+  presvote ~ income + female + white + educ3 + partyid7,
+  family = binomial(link = 'logit'),
+  data = dat_92
+  )
+
+# values should be close to one
+regl$coefficients / (regp$coefficients * 1.6)
+```
+
+### Question 4
+
+Skip
+
+### Question 5
+
+```{r arm06-q05}
+library(VGAM)
+
+dat <- read_stata(
+  'http://stat.columbia.edu/~gelman/arm/examples/lalonde/NSW.dw.obs.dta'
+  )
+
+reg <- vglm(
+  re78 ~ age + educ + black + married + hisp + treat + educ_cat4,
+  tobit(Upper = max(dat$re78)),
+  data = dat
+)
+summary(reg)
+```
+
+### Question 6
+
+Import the data:
+
+```{r arm06-q06}
+# 1986
+dat86 <- read.table(
+  'http://stat.columbia.edu/~gelman/arm/examples/congress/cong3/1986.asc'
+)
+names(dat86) <- c('icpsr', 'district', 'incumb', 'dem', 'rep')
+dat86 %<>% mutate(dshare = dem / (dem + rep))
+
+# 1988
+dat88 <- read.table(
+  'http://stat.columbia.edu/~gelman/arm/examples/congress/cong3/1988.asc'
+)
+names(dat88) <- c('icpsr', 'district', 'incumb', 'dem', 'rep')
+dat88 %<>% mutate(dshare = dem / (dem + rep))
+
+# join
+dat <- left_join(
+  dat86, dat88,
+  by = c('icpsr', 'district'), 
+  suffix = c('86', '88')
+  )
+
+# contested
+dat %<>% 
+  filter(dshare86 > 0.1 & dshare86 < 0.9) %>%
+  filter(dshare88 > 0.1 & dshare88 < 0.9)
+
+# bad elections
+dat %<>% filter(incumb86 != -9 & incumb88 != -9)
+
+```
+
+#### (a)
+
+```{r arm06-q06a}
+rega <- lm(dshare88 ~ dshare86 + incumb88, data = dat)
+summary(rega)
+ba <- rega$coefficients
+```
+
+#### (b)
+
+```{r arm06-q06b}
+library(hett)
+
+regb <- tlm(dshare88 ~ dshare86 + incumb88, data = dat)
+summary(regb)
+bb <- regb$loc.fit$coefficients
+```
+
+```{r arm06-q06c}
+# plot
+p <- ggplot(dat) +
+  geom_point(aes(dshare86, dshare88, colour = factor(incumb88)), alpha = 0.7) +
+  scale_color_manual(
+    name = 'incumbent',
+    labels = c('rep', 'none', 'dem'),
+    values = c('red', 'black', 'blue')
+    ) +
+  geom_abline(
+    intercept = ba[1] + ba[3],
+    slope = ba[2],
+    col = 'blue'
+    ) +
+  geom_abline(
+    intercept = ba[1] - ba[3],
+    slope = ba[2],
+    col = 'red'
+    ) +
+  geom_abline(
+    intercept = bb[1] + bb[3],
+    slope = bb[2],
+    linetype = 3,
+    col = 'blue'
+    ) +
+  geom_abline(
+    intercept = bb[1] - bb[3],
+    slope = bb[2],
+    linetype = 3,
+    col = 'red'
+    ) +
+  labs(x = 'dem share 1986', y = 'dem share 1988')
+p
+```
+
+#### (c)
+
+The models have similar coefficients although `tlm()` places more weight on the effect of incumbency on vote share.  This seems more plausible.
