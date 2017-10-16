@@ -11,8 +11,9 @@ knitr::opts_chunk$set(
   message = F,
   warning = F
   )
-load_tidy()
 library(arm)
+load_tidy()
+arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
 ### Question 1
@@ -20,9 +21,7 @@ library(arm)
 Import the data:
 
 ```{r arm06-q01}
-dat <- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/risky.behavior/risky_behaviors.dta'
-)
+dat <- read_stata(str_c(arm_url, 'risky.behavior/risky_behaviors.dta'))
 ```
 
 
@@ -63,7 +62,7 @@ z <- (dat$fupacts - fu_hat) / sqrt(fu_hat)
 pchisq(sum(z ^ 2), 420 - 4)
 ```
 
-Presumably, inclusion of pre-treatment measure of the outcome means adding `bupacts` as an offset.  Adding baseline HIV status does not affect the previous coefficients.  Futhermore, the coefficient on HIV status seems plausible and is statistically significant.  However, the overdispersion factor is `r sum(z ^ 2) / 416` which is huge.
+Presumably, inclusion of pre-treatment measure of the outcome means adding `bupacts` as an offset.  Adding baseline HIV status does not affect the previous coefficients.  Furthermore, the coefficient on HIV status seems plausible and is statistically significant.  However, the over-dispersion factor is `r sum(z ^ 2) / 416` which is huge.
 
 #### (c)
 
@@ -98,9 +97,7 @@ R &\text{ if } z_{i} \gt c_{I|R}
 $$
 
 ```{r arm06-q02}
-dat <- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
-  )
+dat <- read_stata(str_c(arm_url, 'nes/nes5200_processed_voters_realideo.dta'))
 
 # partyid3 (1 = Democrat, 2 = Independent, 3 = Republican, 4 = Apolitical)
 # ideo (1 = liberal 3 = moderate, 5 = conservative)
@@ -241,9 +238,7 @@ Skip
 ```{r arm06-q05}
 library(VGAM)
 
-dat <- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/lalonde/NSW.dw.obs.dta'
-  )
+dat <- read_stata(str_c(arm_url, 'lalonde/NSW.dw.obs.dta'))
 
 reg <- vglm(
   re78 ~ age + educ + black + married + hisp + treat + educ_cat4,
@@ -258,17 +253,14 @@ summary(reg)
 Import the data:
 
 ```{r arm06-q06}
+
 # 1986
-dat86 <- read.table(
-  'http://stat.columbia.edu/~gelman/arm/examples/congress/cong3/1986.asc'
-)
+dat86 <- read.table(str_c(arm_url, 'congress/cong3/1986.asc'))
 names(dat86) <- c('icpsr', 'district', 'incumb', 'dem', 'rep')
 dat86 %<>% mutate(dshare = dem / (dem + rep))
 
 # 1988
-dat88 <- read.table(
-  'http://stat.columbia.edu/~gelman/arm/examples/congress/cong3/1988.asc'
-)
+dat88 <- read.table(str_c(arm_url, 'congress/cong3/1988.asc'))
 names(dat88) <- c('icpsr', 'district', 'incumb', 'dem', 'rep')
 dat88 %<>% mutate(dshare = dem / (dem + rep))
 
@@ -287,11 +279,17 @@ dat %<>%
 # bad elections
 dat %<>% filter(incumb86 != -9 & incumb88 != -9)
 
+# flips
+dat %<>% mutate(
+  flip = if_else(dshare86 < 0.5 & dshare88 > 0.5, 1, 0),
+  flip = if_else(dshare86 > 0.5 & dshare88 < 0.5, 1, 0)
+  )
 ```
 
 #### (a)
 
 ```{r arm06-q06a}
+
 rega <- lm(dshare88 ~ dshare86 + incumb88, data = dat)
 summary(rega)
 ba <- rega$coefficients
@@ -308,40 +306,208 @@ bb <- regb$loc.fit$coefficients
 ```
 
 ```{r arm06-q06c}
+
 # plot
 p <- ggplot(dat) +
-  geom_point(aes(dshare86, dshare88, colour = factor(incumb88)), alpha = 0.7) +
+  geom_point(
+    data = select(dat, dshare86, dshare88),
+    aes(dshare86, dshare88),
+    col = 'grey'
+    ) +
+  geom_point(aes(dshare86, dshare88, col = factor(incumb88)), alpha = 0.7) +
   scale_color_manual(
     name = 'incumbent',
     labels = c('rep', 'none', 'dem'),
     values = c('red', 'black', 'blue')
     ) +
   geom_abline(
-    intercept = ba[1] + ba[3],
-    slope = ba[2],
-    col = 'blue'
+    aes(intercept = ba[1] + ba[3], slope = ba[2]),
+    col = 'blue',
+    data = filter(dat, incumb88 == 1)
     ) +
   geom_abline(
-    intercept = ba[1] - ba[3],
-    slope = ba[2],
-    col = 'red'
+    aes(intercept = ba[1] - ba[3], slope = ba[2]),
+    col = 'red',
+    data = filter(dat, incumb88 == -1)
     ) +
   geom_abline(
-    intercept = bb[1] + bb[3],
-    slope = bb[2],
+    aes(intercept = bb[1] + bb[3], slope = bb[2]),
     linetype = 3,
-    col = 'blue'
+    col = 'blue',
+    data = filter(dat, incumb88 == 1)
     ) +
   geom_abline(
-    intercept = bb[1] - bb[3],
-    slope = bb[2],
+    aes(intercept = bb[1] - bb[3], slope = bb[2]),
     linetype = 3,
-    col = 'red'
+    col = 'red',
+    data = filter(dat, incumb88 == -1)
     ) +
-  labs(x = 'dem share 1986', y = 'dem share 1988')
+  geom_abline(
+    aes(intercept = ba[1], slope = ba[2]),
+    col = 'black',
+    data = filter(dat, incumb88 == 0)
+    ) +
+  geom_abline(
+    aes(intercept = bb[1], slope = bb[2]),
+    linetype = 3,
+    col = 'black',
+    data = filter(dat, incumb88 == 0)
+    ) +
+  labs(x = 'dem share 1986', y = 'dem share 1988') +
+  facet_grid(~incumb88)
 p
 ```
 
 #### (c)
 
-The models have similar coefficients although `tlm()` places more weight on the effect of incumbency on vote share.  This seems more plausible.
+The models have similar coefficients although.  `tlm()` seems to account better for the outliers in some of the elections where incumbents lost.
+
+### Question 7
+
+#### (a)
+
+```{r arm06-q07a}
+
+dat %<>% mutate(
+  doutcome = if_else(dshare88 > 0.5, 1, 0)
+  )
+
+regl <- glm(
+  doutcome ~ dshare86 + incumb88,
+  family = binomial(link = 'logit'),
+  data = dat
+  )
+summary(regl)
+```
+
+#### (b)
+
+The model is given:
+$$
+P(\text{Democrat wins}) = P(X_i \beta + \epsilon_i > 0)
+$$
+where:
+$$
+\epsilon_i \sim t_\nu \left( 0, \frac{\nu - 2}{\nu} \right)
+$$
+which is estimated using maximum likelihood and the EM-type algorithm taken from [here](http://www.stat.purdue.edu/~chuanhai/teaching/Stat598A/robit.pdf):
+```{r arm06-q07b}
+
+robit_em <- function(par, y, X, tol = 1E-5, maxiter = 1000) {
+  
+  # robit likelihood
+  rll <- function(nu, b, y, X) {
+    ll <- y * log(pt(X %*% b, nu)) + (1 - y) * log(1 - pt(X %*% b, nu))
+    -sum(ll[is.finite(ll)])
+  }
+  
+  # inits
+  n  <- length(y)
+  b  <- par$beta
+  nu <- par$nu
+  it <- 0
+  ll <- rll(nu, b, y, X)
+  conv = F
+    
+  while ((!conv) & (it < maxiter)) {
+    
+    # e step - compute sufficient statistics
+    tau_numer <- y - (2 * y - 1) * pt(-(1 + 2 / nu) ^ 0.5 * X %*% b, nu + 2)
+    tau_denom <- y - (2 * y - 1) * pt(-X %*% b, nu)
+    tau <- tau_numer / tau_denom
+    z <- X %*% b + (2 * y - 1) * dt(X %*% b, nu) / tau_numer
+    S_txx <- Reduce('+', map(1:n, ~tau[.x] * X[.x, ] %*% t(X[.x, ])))
+    S_txz <- Reduce('+', map(1:n, ~tau[.x] * X[.x, ] * z[.x]))
+    
+    # m step 1 - update beta
+    b <- solve(S_txx) %*% S_txz
+    
+    # m step 2 - search for nu
+    m <- 'Brent'
+    l <- 2
+    u <- 1E9
+    opt <- optim(nu, rll, b = b, y = y, X = X, method = m, lower = l, upper = u)
+    nu <- opt$par
+    
+    # check convergence
+    conv <- abs(opt$value - ll) < tol
+    ll <- opt$value
+    
+    # increase step
+    it <- it + 1
+    
+  } # end while loop
+  
+  # exit information
+  if (it == maxiter) {
+    exit <- 'maxiter reached'
+  } else {
+    exit <- str_c('Flag: ', opt$convergence, ', Iterations: ', it)
+  }
+  
+  return(
+    list(
+      coefficents = t(b), 
+      nu = nu, 
+      logLik = -ll[length(ll)],
+      exit = exit
+    )
+  )
+}
+
+par0 <- list(beta = regl$coefficients, nu = 7)
+y <- model.frame(regl)[, 1]
+X <- cbind(1, model.frame(regl)[, -1])
+X %<>% as.matrix()
+colnames(X)[1] <- '(Intercept)'
+regr <- robit_em(par0, y, X)
+print(regr)
+```
+
+#### (c)
+
+Given the above, it would appear a standard probit model would work best in this case (i.e. $\nu \rightarrow \infty$).
+
+### Question 8
+
+Skip
+
+### Question 9
+
+Skip
+
+### Question 10
+
+#### (a)
+
+Voter $i$'s ideal point can be expressed as:
+$$
+\theta_i = x_i^T \beta + \epsilon_i
+$$
+with the voter's utility for candidates $A$ and $B$ given by:
+$$
+\begin{align}
+u_{iA} &= || \theta_i - \theta_A || ^ 2 = \theta_i ^ 2 - \theta_i \theta_A + \theta_A ^ 2 \\
+u_{iB} &= || \theta_i - \theta_B || ^ 2 = \theta_i ^ 2 - \theta_i \theta_B + \theta_B ^ 2
+\end{align}
+$$
+
+#### (b)
+
+The voter will choose candidate $A$ if:
+$$
+u_{iA} > u_{iB} \iff \theta_A ^ 2 - \theta_B ^ 2 + (\theta_B - \theta_A) \theta_i > 0
+$$
+or equivalently:
+$$
+-\epsilon_i < \frac{(\theta_A ^ 2 - \theta_B ^ 2)}{(\theta_B - \theta_A)} + x_i^T \beta
+$$
+Relabeling and the disributional assumption for $\epsilon_i$ imply:
+$$
+P(\text{voter i chooses A}) = \Phi(\alpha + x_i^T \beta)
+$$
+where $\Phi(\cdot)$ is the CDF for a standard normal.
+
+### Question 11
+
+Skip
