@@ -123,10 +123,7 @@ $(document).ready(function () {
 <div id="question-1" class="section level3">
 <h3>Question 1</h3>
 <p>Import the data:</p>
-<pre class="r"><code>dat &lt;- read_delim(
-  'http://stat.columbia.edu/~gelman/arm/examples/pyth/exercise2.1.dat',
-  delim = ' '
-  )</code></pre>
+<pre class="r"><code>dat &lt;- read_delim(str_c(arm_url, 'pyth/exercise2.1.dat'), delim = ' ')</code></pre>
 <div id="a" class="section level4">
 <h4>(a)</h4>
 <pre class="r"><code>reg &lt;- lm(y ~ x1 + x2, data = dat[1:40, ]) ; summary(reg)</code></pre>
@@ -139,10 +136,10 @@ $(document).ready(function () {
 ## -0.959 -0.587 -0.336  0.397  2.855 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value         Pr(&gt;|t|)    
-## (Intercept)   1.3151     0.3877    3.39           0.0017 ** 
-## x1            0.5148     0.0459   11.22 0.00000000000018 ***
-## x2            0.8069     0.0243   33.15          &lt; 2e-16 ***
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   1.3151     0.3877    3.39   0.0017 ** 
+## x1            0.5148     0.0459   11.22  1.8e-13 ***
+## x2            0.8069     0.0243   33.15  &lt; 2e-16 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -214,28 +211,24 @@ p</code></pre>
 \begin{aligned}
 \ln(earnings) = a + b \times \ln(height)
 \end{aligned}
-\]</span></p>
-<p>The first two bullet points imply that <span class="math inline">\(a = 6.96\)</span> and <span class="math inline">\(b = 0.8\)</span>. The third bullet point implies that: <span class="math display">\[
+\]</span> The first two bullet points imply that <span class="math inline">\(a = 6.96\)</span> and <span class="math inline">\(b = 0.8\)</span>. The third bullet point implies that: <span class="math display">\[
 \ln(y) \leq \ln(\hat y) + 1.96 \hat \sigma \\
-\]</span></p>
-<p>and also that: <span class="math display">\[
+\]</span> and also that: <span class="math display">\[
 \begin{align}
 y &amp;\leq 1.1 \hat y \\
 \ln(y) &amp;\leq \ln(\hat y) + \ln(1.1)
 \end{align}
-\]</span> Combining we have:</p>
-<p><span class="math display">\[
+\]</span> Combining we have: <span class="math display">\[
 \begin{align}
 1.96 \hat \sigma &amp;= \ln(1.1) \\
-\hat \sigma &amp;= 0.049
+\hat \sigma &amp;= 0.04863
 \end{align}
 \]</span></p>
 </div>
 <div id="b-1" class="section level4">
 <h4>(b)</h4>
-<p>Given that <span class="math inline">\(s = 0.5\)</span> we have that:</p>
-<p><span class="math display">\[
-R^2 = 1 - \frac{\hat \sigma^2}{s^2} = 0.054
+<p>Given that <span class="math inline">\(s = 0.5\)</span> we have that:` <span class="math display">\[
+R^2 = 1 - \frac{\hat \sigma^2}{s^2} = 0.05414
 \]</span></p>
 </div>
 </div>
@@ -253,16 +246,18 @@ reg &lt;- lm(var2 ~ var1) ; summary(reg)</code></pre>
 ## 
 ## Residuals:
 ##    Min     1Q Median     3Q    Max 
-## -3.807 -0.743 -0.005  0.732  3.578 
+## -2.978 -0.670  0.024  0.692  4.058 
 ## 
 ## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)
-## (Intercept) -0.000255   0.032466   -0.01     0.99
-## var1        -0.029072   0.032101   -0.91     0.37
+##             Estimate Std. Error t value Pr(&gt;|t|)  
+## (Intercept)  -0.0410     0.0315   -1.30    0.194  
+## var1         -0.0634     0.0315   -2.02    0.044 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 1.03 on 998 degrees of freedom
-## Multiple R-squared:  0.000821,   Adjusted R-squared:  -0.00018 
-## F-statistic: 0.82 on 1 and 998 DF,  p-value: 0.365</code></pre>
+## Residual standard error: 0.997 on 998 degrees of freedom
+## Multiple R-squared:  0.00405,    Adjusted R-squared:  0.00305 
+## F-statistic: 4.06 on 1 and 998 DF,  p-value: 0.0442</code></pre>
 <p>The slope coefficient is not statistically significant.</p>
 </div>
 <div id="b-2" class="section level4">
@@ -286,9 +281,7 @@ table(abs(dat) &gt;= 2)['TRUE']</code></pre>
 <div id="question-4" class="section level3">
 <h3>Question 4</h3>
 <p>Import the data:</p>
-<pre class="r"><code>dat &lt;- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/child.iq/child.iq.dta'
-  )</code></pre>
+<pre class="r"><code>dat &lt;- read_stata(str_c(arm_url, 'child.iq/child.iq.dta'))</code></pre>
 <div id="a-3" class="section level4">
 <h4>(a)</h4>
 <pre class="r"><code>reg &lt;- lm(ppvt ~ momage, data = dat) ; summary(reg)</code></pre>
@@ -301,9 +294,9 @@ table(abs(dat) &gt;= 2)['TRUE']</code></pre>
 ## -67.11 -11.80   2.97  14.86  55.21 
 ## 
 ## Coefficients:
-##             Estimate Std. Error t value          Pr(&gt;|t|)    
-## (Intercept)   67.783      8.688    7.80 0.000000000000054 ***
-## momage         0.840      0.379    2.22             0.027 *  
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   67.783      8.688    7.80  5.4e-14 ***
+## momage         0.840      0.379    2.22    0.027 *  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -426,9 +419,7 @@ p</code></pre>
 <div id="question-5" class="section level3">
 <h3>Question 5</h3>
 <p>Import the data:</p>
-<pre class="r"><code>dat &lt;- read_csv(
-  'http://stat.columbia.edu/~gelman/arm/examples/beauty/ProfEvaltnsBeautyPublic.csv'
-  )</code></pre>
+<pre class="r"><code>dat &lt;- read_csv(str_c(arm_url, 'beauty/ProfEvaltnsBeautyPublic.csv'))</code></pre>
 <div id="a-4" class="section level4">
 <h4>(a)</h4>
 <p>Without a description of the dataset it is difficult to come up with a model. Here we choose the standardized average beauty score, an indicator for female, and an indicator for minority as predictors:</p>
