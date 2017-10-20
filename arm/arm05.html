@@ -123,9 +123,7 @@ $(document).ready(function () {
 <div id="question-1" class="section level3">
 <h3>Question 1</h3>
 <p>Import the data:</p>
-<pre class="r"><code>dat &lt;- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
-  )</code></pre>
+<pre class="r"><code>dat &lt;- read_stata(str_c(arm_url, 'nes/nes5200_processed_voters_realideo.dta'))</code></pre>
 <div id="a" class="section level4">
 <h4>(a)</h4>
 <p>Unfortunately, the data is not accompanied by a description of the variables.</p>
@@ -237,8 +235,8 @@ p</code></pre>
 \end{align}
 \]</span> which implies: <span class="math display">\[
 \begin{align}
-\alpha &amp;= \ln(0.27) - \ln(1 - 0.27) = -0.995 \\
-\beta &amp;= \frac{1}{6} \times \left[ \ln(0.81) - \ln(1 - 0.81) - \alpha \right] = 2.445
+\alpha &amp;= \ln(0.27) - \ln(1 - 0.27) = -0.99462 \\
+\beta &amp;= \frac{1}{6} \times \left[ \ln(0.81) - \ln(1 - 0.81) - \alpha \right] = 2.44463
 \end{align}
 \]</span></p>
 </div>
@@ -302,7 +300,7 @@ reg1 &lt;- glm(pass ~ score, data = dat, family = binomial(link = 'logit'))
 reg2 &lt;- glm(pass ~ score + noise, data = dat, family = binomial(link = 'logit'))
 
 summary(reg1)$deviance - summary(reg2)$deviance</code></pre>
-<pre><code>## [1] 0.0251</code></pre>
+<pre><code>## [1] 0.025118</code></pre>
 <p>There is a small change in deviance but less than one.</p>
 </div>
 </div>
@@ -319,7 +317,7 @@ dens &lt;- tibble(late = density(latent)$x, dens = density(latent)$y)</code></pr
 \text{Pr}(\epsilon \leq -4.5) = 1 - \frac{1}{1 + e ^ {4.5}} = 0.989
 \]</span></p>
 <pre class="r"><code># construct data for polygon where y = 1
-cutoff &lt;- min(abs(dens$late) - 0)
+cutoff &lt;- min(abs(dens$late))
 area &lt;- rbind(
   c(cutoff, 0),
   filter(dens, late &gt; 0),
@@ -365,10 +363,7 @@ summary(reg)</code></pre>
 <div id="question-8" class="section level3">
 <h3>Question 8</h3>
 <p>Import the data:</p>
-<pre class="r"><code>dat &lt;- read_delim(
-  'http://stat.columbia.edu/~gelman/arm/examples/rodents/rodents.dat',
-  delim = ' '
-  )</code></pre>
+<pre class="r"><code>dat &lt;- read_delim(str_c(arm_url, 'rodents/rodents.dat'), delim = ' ')</code></pre>
 <div id="a-2" class="section level4">
 <h4>(a)</h4>
 <p>We will disregard race = 7 and treat the variable as categorical:</p>
@@ -456,9 +451,7 @@ summary(reg)</code></pre>
 <div id="question-9" class="section level3">
 <h3>Question 9</h3>
 <p>Import the dat:</p>
-<pre class="r"><code>dat &lt;- read.table(
-  'http://stat.columbia.edu/~gelman/arm/examples/arsenic/wells.dat'
-)</code></pre>
+<pre class="r"><code>dat &lt;- read.table(str_c(arm_url, 'arsenic/wells.dat'))</code></pre>
 <div id="a-3" class="section level4">
 <h4>(a)</h4>
 <pre class="r"><code>reg &lt;- glm(
@@ -477,9 +470,9 @@ summary(reg)</code></pre>
 ## -1.637  -1.280   0.979   1.062   1.222  
 ## 
 ## Coefficients:
-##             Estimate Std. Error z value      Pr(&gt;|z|)    
-## (Intercept)   1.0197     0.1631    6.25 0.00000000041 ***
-## log(dist)    -0.2004     0.0443   -4.53 0.00000600045 ***
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)   1.0197     0.1631    6.25  4.1e-10 ***
+## log(dist)    -0.2004     0.0443   -4.53  6.0e-06 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
@@ -582,7 +575,7 @@ summary(reg)</code></pre>
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <pre class="r"><code>cf &lt;- coef(reg)</code></pre>
-<p>The baseline probability of switching – a distance of zero and the minimum arsenic level – is 0.484. A 100 meter increase in the distance to the nearest safe well is associated with a 0.245 change in the probability of switching. A one percent increase in arsenic level is associated with a 0.219 change in the probability of switching.</p>
+<p>The baseline probability of switching – a distance of zero and the minimum arsenic level – is 0.48417. A 100 meter increase in the distance to the nearest safe well is associated with a 0.24489 change in the probability of switching. A one percent increase in arsenic level is associated with a 0.21899 change in the probability of switching.</p>
 </div>
 <div id="b-4" class="section level4">
 <h4>(b)</h4>
@@ -618,9 +611,7 @@ p2</code></pre>
 </div>
 <div id="question-11" class="section level3">
 <h3>Question 11</h3>
-<pre class="r"><code>dat &lt;- read_stata(
-  'http://stat.columbia.edu/~gelman/arm/examples/nes/nes5200_processed_voters_realideo.dta'
-  )
+<pre class="r"><code>dat &lt;- read_stata(str_c(arm_url, 'nes/nes5200_processed_voters_realideo.dta'))
 
 dat_64 &lt;- dat %&gt;%
   filter(year == 1964) %&gt;%

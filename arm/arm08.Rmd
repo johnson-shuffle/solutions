@@ -1,0 +1,170 @@
+---
+title: 'ARM: Chapter 8'
+output: html_document
+---
+
+```{r arm08-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'arm_cache/',
+  fig.path = 'arm_fig/',
+  message = F,
+  warning = F
+  )
+library(arm)
+load_tidy()
+
+# arm link
+arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
+
+# arm functions
+walk(list.files('./arm/arm_fun', full.names = T), source)
+```
+
+### Question 1
+
+#### (a)
+
+```{r arm08-q01a}
+set.seed(1)
+
+tpar <- c(0, 5, 4)
+beta <- c(3, 0.1, 0.5)
+x1 <- 1:100
+x2 <- rbinom(100, 1, 0.5)
+y  <- cbind(1, x1, x2) %*% beta + tpar[2] * rt(100, tpar[3])
+
+reg <- lm(y ~ x1 + x2)
+confint(reg, '(Intercept)', level = 0.68)
+confint(reg, 'x1', level = 0.68)
+confint(reg, 'x2', level = 0.68)
+
+names(beta) <- names(coef(reg))
+```
+
+The true coefficients are all covered by the 68\% confidence intervals.
+
+#### (b)
+
+```{r arm08-q01b}
+sim_fun <- function(tpar, beta, level) {
+  x1 <- 1:100
+  x2 <- rbinom(100, 1, 0.5)
+  y  <- cbind(1, x1, x2) %*% beta + tpar[2] * rt(100, tpar[3])
+  reg <- lm(y ~ x1 + x2)
+  lab <- names(coef(reg))
+  
+  cis <- map(lab, ~confint(reg, .x, level = level)) ; names(cis) <- lab
+  map_lgl(lab, ~beta[.x] >= cis[[.x]][1] & beta[.x] <= cis[[.x]][2])
+}
+
+n_sims <- replicate(1000, sim_fun(tpar, beta, 0.68))
+
+# coverages
+apply(n_sims, 1, mean)
+```
+
+#### (c)
+
+```{r arm08-q01c}
+library(hett)
+
+sim_fun <- function(tpar, beta, level) {
+  x1 <- 1:100
+  x2 <- rbinom(100, 1, 0.5)
+  y  <- cbind(1, x1, x2) %*% beta + tpar[2] * rt(100, tpar[3])
+  reg <- tlm(y ~ x1 + x2, start = list(dof = 4))
+  cof <- summary(reg)$loc.summary$coefficients
+  lab <- names(cof[, 1])
+  
+  cis <- map(lab, ~c(cof[.x, ][1] - cof[.x, ][2], cof[.x, ][1] + cof[.x, ][2]))
+  names(cis) <- lab
+  map_lgl(lab, ~beta[.x] >= cis[[.x]][1] & beta[.x] <= cis[[.x]][2])
+}
+n_sims <- replicate(1000, sim_fun(tpar, beta, 0.68))
+
+# coverages
+apply(n_sims, 1, mean)
+```
+
+### Question 2
+
+Skip 
+
+### Question 3
+
+Skip
+
+### Question 4
+
+```{r arm08-q04_}
+# reload chapter 6, exercise 1
+dat <- knitr::load_cache('arm06-q01_', 'dat')
+```
+
+#### (a)
+
+```{r arm08-q04a}
+reg <- glm(fupacts ~ bs_hiv, family = poisson(link = 'log'), data = dat)
+
+# third quartile
+tq <- quantile(dat$fupacts, probs = 0.75)
+
+sim_fun <- function(reg, dat) {
+  p <- sim(reg, 1)
+  m <- cbind(1, dat$bs_hiv) %*% t(coef(p))
+  r <- predict(reg, type = 'response')
+  x <- length(r[round(r) == 0]) / length(r)
+  y <- length(r[round(r) > tq]) / length(r)
+  c(zero = x, five = y)
+}
+n_sims <- apply(replicate(1000, sim_fun(reg, dat)), 1, mean)
+
+# simulated vs actual
+cat(n_sims[['zero']], 'vs', table(dat$fupacts == 0)[[2]] / nrow(dat))
+cat(n_sims[['five']], 'vs', table(dat$fupacts > tq)[[2]] / nrow(dat))
+```
+
+#### (b)
+
+```{r arm08-q04b}
+reg <- glm(fupacts ~ bs_hiv, family = quasipoisson(link = 'log'), data = dat)
+
+sim_fun <- function(reg, dat) {
+  p <- sim(reg, 1)
+  m <- cbind(1, dat$bs_hiv) %*% t(coef(p))
+  r <- map_dbl(1:nrow(dat), ~rnbinom(1, m[.x] / (sigma.hat(p) - 1), mu = m[.x]))
+  x <- length(r[round(r) == 0]) / length(r)
+  y <- length(r[round(r) > tq]) / length(r)
+  c(zero = x, five = y)
+}
+n_sims <- apply(replicate(1000, sim_fun(reg, dat)), 1, mean)
+
+# simulated vs actual
+cat(n_sims[['zero']], 'vs', table(dat$fupacts == 0)[[2]] / nrow(dat))
+cat(n_sims[['five']], 'vs', table(dat$fupacts > tq)[[2]] / nrow(dat))
+```
+
+#### (b)
+
+```{r arm08-q04c}
+reg <- glm(
+  fupacts ~ bs_hiv + bupacts + women_alone,
+  family = quasipoisson(link = 'log'),
+  data = dat
+  )
+
+sim_fun <- function(reg, dat) {
+  p <- sim(reg, 1)
+  m <- cbind(1, as.matrix(model.frame(reg)[, -1])) %*% t(coef(p))
+  r <- map_dbl(1:nrow(dat), ~rnbinom(1, m[.x] / (sigma.hat(p) - 1), mu = m[.x]))
+  x <- length(r[round(r) == 0]) / length(r)
+  y <- length(r[round(r) > tq]) / length(r)
+  c(zero = x, five = y)
+}
+n_sims <- apply(replicate(1000, sim_fun(reg, dat)), 1, mean)
+
+# simulated vs actual
+cat(n_sims[['zero']], 'vs', table(dat$fupacts == 0)[[2]] / nrow(dat))
+cat(n_sims[['five']], 'vs', table(dat$fupacts > tq)[[2]] / nrow(dat))
+```

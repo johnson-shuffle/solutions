@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
   )
 library(arm)
 load_tidy()
+
+# arm link
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
@@ -69,7 +71,7 @@ Skip
 
 Create similar dataset and models:
 
-```{r arm04-q03}
+```{r arm04-q03_}
 
 # age (the original paper indicates the survey was conducted in 1990)
 dat$age <- 90 - dat$yearbn
@@ -144,7 +146,7 @@ p
 
 Import the data:
 
-```{r arm04-q04}
+```{r arm04-q04_}
 dat <- read_stata(str_c(arm_url, 'pollution/pollution.dta'))
 ```
 

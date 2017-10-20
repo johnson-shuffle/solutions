@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
   )
 library(arm)
 load_tidy()
+
+# arm link
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
@@ -20,7 +22,7 @@ arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 
 Import the data:
 
-```{r arm03-q01}
+```{r arm03-q01_}
 dat <- read_delim(str_c(arm_url, 'pyth/exercise2.1.dat'), delim = ' ')
 ```
 
@@ -158,7 +160,7 @@ table(abs(dat) >= 2)['TRUE']
 
 Import the data:
 
-```{r arm03-q04}
+```{r arm03-q04_}
 dat <- read_stata(str_c(arm_url, 'child.iq/child.iq.dta'))
 ```
 
@@ -253,7 +255,7 @@ p
 
 Import the data:
 
-```{r arm03-q05}
+```{r arm03-q05_}
 dat <- read_csv(str_c(arm_url, 'beauty/ProfEvaltnsBeautyPublic.csv'))
 ```
 

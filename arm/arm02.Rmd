@@ -13,6 +13,8 @@ knitr::opts_chunk$set(
   )
 library(arm)
 load_tidy()
+
+# arm link
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
