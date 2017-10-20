@@ -63,7 +63,7 @@ $$
 
 Import the data:
 
-```{r arm02-q02}
+```{r arm02-q02_}
 dat <- read_lines(str_c(arm_url, 'girls/births.txt'))
 
 dat[4] <- "month\ttotal births\t\tproportion girls" 
@@ -107,7 +107,7 @@ tstat < upper & tstat > lower
 
 ### Question 3
 
-```{r arm02-q03}
+```{r arm02-q03_}
 dat <- tibble(x = replicate(1000, sum(runif(20, 0, 1))))
 
 # theoretical values
@@ -127,7 +127,7 @@ p
 
 ### Question 4
 
-```{r arm02-q04}
+```{r arm02-q04_}
 ht_diff <- function() {mean(rnorm(100, 69.1, 2.9)) - mean(rnorm(100, 63.7, 2.7))}
 dat <- tibble(x = replicate(1000, ht_diff()))
 
@@ -150,7 +150,7 @@ p
 
 The mean and standard deviation are given by:
 
-```{r arm02-q05}
+```{r arm02-q05_}
 mn_exp <- (69.1 + 63.71) / 2
 print(mn_exp)
 
