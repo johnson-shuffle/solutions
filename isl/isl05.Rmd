@@ -1,0 +1,414 @@
+---
+title: "ISL: Chapter 5"
+output: html_document
+---
+
+```{r isl05-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'isl_cache/',
+  fig.path = 'isl_fig/',
+  message = F,
+  warning = F
+  )
+library(ISLR)
+library(MASS)
+library(caret)
+library(boot)
+load_tidy()
+```
+
+<!----------------------------------------------------------------------------->
+### Question 1
+<!----------------------------------------------------------------------------->
+
+We have the following identities:
+$$
+\begin{align}
+Var(X+Y) &= Var(X) + Var(Y) + 2 Cov(X,Y) \\
+Var(cX) &= c^2 Var(X) \\
+Cov(cX,Y) &= Cov(X,cY) = c Cov(X,Y)
+\end{align}
+$$
+Therefore:
+$$
+\begin{align}
+Var(\alpha X + (1 - \alpha) Y) &= Var(\alpha X) + Var((1 - \alpha) Y) + 2 Cov(\alpha X, (1 - \alpha) Y) \\
+&= \alpha^2 \sigma_X^2 + (1 - \alpha)^2 \sigma_Y^2 + 2 \alpha (1 - \alpha) \sigma_{XY}
+\end{align}
+$$
+Taking the derivative of the above with respect to $\alpha$ and setting it equal to zero yields:
+$$
+2 \alpha \sigma_X^2 - 2 \sigma_Y^2 + 2 \alpha \sigma_Y^2 + 2 \sigma_{XY} - 4 \alpha \sigma_{XY} = 0
+$$
+which after some rearranging gives the result.
+
+<!-----------------------------------------------------------------------------> 
+### Question 2
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+The probability the first bootstrap observation is the jth observation is $\frac{1}{n}$ so the probability is $1 - \frac{1}{n}$.
+
+#### (b)
+
+The probability the second bootstrap observation is the jth observation is $\frac{1}{n}$ so the probability is $1 - \frac{1}{n}$. 
+
+#### (c)
+
+The samples are independent and are taken with replacement so the probability the jth observation is not in the set is $(1 - \frac{1}{n})^n$
+
+#### (d)
+
+$1 - (1 - 0.2)^5 = 0.672$
+
+#### (e)
+
+$1 - (1 - 0.01)^{100} = 0.633$
+
+#### (f)
+
+$1 - (1 - 0.0001)^{10000} = 0.632$
+
+#### (g)
+
+```{r isl05-q02g}
+x <- 1:100000
+y <- 1 - (1 - 1 / x) ^ x
+qplot(x, y)
+```
+
+#### (h)
+
+```{r isl05-q02h}
+set.seed(1)
+store <- rep(NA, 10000)
+for (i in 1:10000) {
+  store[i] <- sum(sample(1:100, replace = T) == 4) > 0
+}
+mean(store)
+```
+
+<!----------------------------------------------------------------------------->
+### Question 3
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+The data is divided into $k$ equally sized subsets.  One subset is removed to act as a validation set and the others are used to estimate the model.  This produces $k$ estimates of MSE with the overall estimate being the average of these.
+
+#### (b)
+
+The k-fold approach reduces bias relative to the validation set approach since it uses more observations to train the model.  It also reduces computation time relative to the LOOCV approach.
+
+<!----------------------------------------------------------------------------->
+### Question 4
+<!----------------------------------------------------------------------------->
+
+Take random samples from $X$ with replacement, estimate the model, make the prediction, and store it.  Repeat this process and use the standard deviation of the stored predictions.
+
+<!----------------------------------------------------------------------------->
+### Question 5
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl05-q05a}
+glm05a <- glm(default ~ income + balance, data = Default, family = binomial)
+summary(glm05a)
+```
+
+#### (b)
+
+```{r isl05-q05b}
+set.seed(1)
+
+train  <- createDataPartition(Default$default, times = 1, p = 0.5, list = F)
+trainX <- Default[train, ]
+testX  <- Default[-train, ]
+
+glm05b <- glm(default ~ income + balance, data = trainX, family = binomial)
+summary(glm05b)
+
+prob <- predict(glm05b, newdata = testX, type = 'response')
+pred <- rep('Yes', length(prob))
+pred[prob < 0.5] <- 'No'
+mean(pred != testX$default)
+```
+
+The test error rate is 2.5\%.
+
+#### (c)
+
+```{r isl05-q05c}
+train <- createDataPartition(Default$default, times = 3, p = 0.5)
+
+store <- rep(NA, 3)
+for (i in 1:3) {
+  trainX <- Default[train[[i]], ]
+  testX  <- Default[-train[[i]], ]
+  glm05c <- glm(default ~ income + balance, data = trainX, family = binomial)
+  prob <- predict(glm05c, newdata = testX, type = 'response')
+  pred <- rep('Yes', length(prob))
+  pred[prob < 0.5] <- 'No'
+  store[i] <- mean(pred != testX$default)
+}
+```
+
+#### (d)
+
+```{r isl05-q05d}
+set.seed(1)
+
+train  <- createDataPartition(Default$default, times = 1, p = 0.5, list = F)
+trainX <- Default[train, ]
+testX  <- Default[-train, ]
+
+glm05d <- glm(
+  default ~ income + balance + student, 
+  data = trainX, 
+  family = binomial
+  )
+summary(glm05d)
+
+prob <- predict(glm05d, newdata = testX, type = 'response')
+pred <- rep('Yes', length(prob))
+pred[prob < 0.5] <- 'No'
+mean(pred != testX$default)
+```
+
+The test error rate increases slightly to 2.6% after adding `student`.
+
+<!----------------------------------------------------------------------------->
+### Question 6
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl05-q06a}
+glm06a <- glm(default ~ income + balance, data = Default, family = binomial)
+summary(glm06a)$coefficients
+```
+
+#### (b)
+
+```{r isl05-q06b}
+boot_fun <- function(data, index) {
+  g <- glm(
+    default ~ income + balance, 
+    data = Default[index, ], 
+    family = binomial
+    )
+  coef(g)[2:3]
+}
+```
+
+#### (c)
+
+```{r isl05-q06c}
+set.seed(1)
+
+boot(Default, boot_fun, R = 50)
+```
+
+#### (d)
+
+The standard errors are similar using the bootstrap.
+
+<!----------------------------------------------------------------------------->
+### Question 7
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl05-q07a}
+glm07a <- glm(Direction ~ Lag1 + Lag2, data = Weekly, family = binomial)
+summary(glm07a)
+```
+
+#### (b)
+
+```{r isl05-q07b}
+glm07b <- glm(Direction ~ Lag1 + Lag2, data = Weekly[-1, ], family = binomial)
+summary(glm07b)
+```
+
+#### (c)
+
+```{r isl05-q07c}
+predict(glm07b, newdata = Weekly[1, ], type = 'response')
+Weekly$Direction[1]
+```
+
+The model predicts Up which is incorrect.
+
+#### (d)
+
+```{r isl05-q07d}
+glm_err <- function(i) {
+  g <- glm(Direction ~ Lag1 + Lag2, data = Weekly[-i, ], family = binomial)
+  p <- predict(glm07b, newdata = Weekly[i, ], type = 'response')
+  o <- round(p)
+  as.numeric(o != as.numeric(Weekly$Direction[i]) - 1)
+}
+store <- map_dbl(1:nrow(Weekly), glm_err)
+```
+
+#### (e)
+
+```{r isl05-q07e}
+mean(store)
+```
+
+The test error rate using LOOCV is 44.4%.
+
+<!----------------------------------------------------------------------------->
+### Question 8
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl05-q08a}
+set.seed(1)
+y <- rnorm(100)
+x <- rnorm(100)
+y <- x - 2 * x ^ 2 + rnorm(100)
+```
+
+In this case, $n=100$ and $p=2$ with the model given by:
+$$
+y = x - 2 x ^ 2 + \epsilon
+$$
+
+#### (b)
+
+```{r isl05-q08b}
+qplot(x, y)
+```
+
+#### (c)
+
+```{r isl05-q08c}
+set.seed(1)
+
+dat <- tibble(x = x, y = y)
+
+glm08c <- glm(y ~ x, data = dat)
+cv.glm(dat, glm08c)$delta
+
+glm08c <- glm(y ~ poly(x, 2), data = dat)
+cv.glm(dat, glm08c)$delta
+
+glm08c <- glm(y ~ poly(x, 3), data = dat)
+cv.glm(dat, glm08c)$delta
+
+glm08c <- glm(y ~ poly(x, 4), data = dat)
+cv.glm(dat, glm08c)$delta
+```
+
+#### (d)
+
+```{r isl05-q08d}
+set.seed(2)
+
+glm08d <- glm(y ~ x, data = dat)
+cv.glm(dat, glm08d)$delta
+
+glm08d <- glm(y ~ poly(x, 2), data = dat)
+cv.glm(dat, glm08d)$delta
+
+glm08d <- glm(y ~ poly(x, 3), data = dat)
+cv.glm(dat, glm08d)$delta
+
+glm08d <- glm(y ~ poly(x, 4), data = dat)
+cv.glm(dat, glm08d)$delta
+```
+
+The results are identical to (c).  This would be expected since LOOCV uses $n$ folds.
+
+#### (e)
+
+The quadratic fit has the smallest error which would be expected given the DGP is quadratic.
+
+#### (f)
+
+```{r isl05-q08f}
+glm08f <- glm(y ~ x, data = dat)
+summary(glm08f)$coefficients
+
+glm08f <- glm(y ~ poly(x, 2), data = dat)
+summary(glm08f)$coefficients
+
+glm08f <- glm(y ~ poly(x, 3), data = dat)
+summary(glm08f)$coefficients
+
+glm08f <- glm(y ~ poly(x, 4), data = dat)
+summary(glm08f)$coefficients
+```
+
+The linear and quadratic coefficients are significant which is consistent with the LOOCV results.
+
+<!----------------------------------------------------------------------------->
+### Question 9
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl05-q09a}
+mean(Boston$medv)
+```
+
+#### (b)
+
+```{r isl05-q09b}
+sd(Boston$medv) / sqrt(nrow(Boston))
+```
+
+#### (c)
+
+```{r isl05-q09c}
+boot_fun <- function(data, index) { mean(data$medv[index]) }
+b <- boot(Boston, boot_fun, R = 1000)
+b
+```
+
+The standard error is larger using the bootstrap.
+
+#### (d)
+
+```{r isl05-q09d}
+bci <- boot.ci(b)
+ci1 <- bci$normal[2:3]
+ci2 <- t.test(Boston$medv)$conf.int
+```
+
+The confidence interval using the bootstrap is slighlty larger.
+
+#### (e)
+
+```{r isl05-q09e}
+median(Boston$medv)
+```
+
+#### (f)
+
+```{r isl05-q09f}
+boot_fun <- function(data, index) { median(data$medv[index]) }
+b <- boot(Boston, boot_fun, R = 1000)
+b
+```
+
+#### (g)
+
+```{r isl05-q09g}
+quantile(Boston$medv, probs = 0.1)
+```
+
+#### (h)
+
+```{r isl05-q09h}
+boot_fun <- function(data, index) { quantile(data$medv[index], probs = 0.1) }
+b <- boot(Boston, boot_fun, R = 1000)
+b
+```

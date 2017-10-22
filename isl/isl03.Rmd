@@ -1,0 +1,484 @@
+---
+title: "ISL: Chapter 3"
+output: html_document
+---
+
+```{r isl03-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'isl_cache/',
+  fig.path = 'isl_fig/',
+  message = F,
+  warning = F
+  )
+library(ISLR)
+load_tidy()
+```
+
+<!----------------------------------------------------------------------------->
+### Question 1
+<!----------------------------------------------------------------------------->
+
+The null hypotheses are that each of the coefficients individually has no effect on sales in the presence of the others.  One can conclude from their values that the coefficients for `Intercept`, `TV`, and `radio` are statistically different from zero while the coefficient for `newspaper` is not.
+
+<!----------------------------------------------------------------------------->
+### Question 2
+<!----------------------------------------------------------------------------->
+
+The KNN classifier and the KNN regression method both rely on the K nearest neighbors of a set of given predictors.  However, the former predicts a qualitative outcome $Y_i$ while the latter predicts a quantative outcome $f(X_i)$.
+
+<!----------------------------------------------------------------------------->
+### Question 3
+<!----------------------------------------------------------------------------->
+
+We have the following model:
+$$
+Salary = 50 + 20 \cdot GPA + 0.7 \cdot IQ + 35 \cdot I_{Female} + 0.01 \cdot GPA \times IQ - 10 \cdot GPA \times I_{Female}
+$$
+
+#### (a)
+
+For a fixed value of $IQ$ and $GPA$, males earn more on average than females provided that $GPA$ is high enough.
+
+#### (b)
+
+Given a female with $IQ = 110$ and $GPA = 4.0$, predicted salary is:
+$$
+50 + 20 \cdot 4.0 + 0.7 * 110 + 35 + 0.01 \cdot 4.0 \times 110 - 10 \cdot 4.0 = 137.1
+$$
+
+#### (c)
+
+False, we need to know the p-value to have supporting evidence.  Furthermore, the effect of the interaction term will depend on the scale of the $IQ$ and $GPA$ variables.
+
+<!----------------------------------------------------------------------------->
+### Question 4
+<!----------------------------------------------------------------------------->
+
+Comparing linear and cubic regressions given a linear DGP:
+
+#### (a)
+
+We would expect the training RSS to be lower using the cubic regression since it is more flexible.
+
+#### (b)
+
+We would expect the test RSS to be higher using the cubic regression due to overfitting.
+
+#### (c)
+
+The cubic regression will always perform better (in terms of training RSS).
+
+#### (d)
+
+Given a non-linear DGP, there is not enough information to know since the relationship may be close to linear or highly non-linear.
+
+<!----------------------------------------------------------------------------->
+### Question 5
+<!----------------------------------------------------------------------------->
+
+Substitution and rearranging implies:
+$$
+\hat y_i = x_i \frac{\sum_{j=1}^n x_j y_j}{\sum_{k=1}^n x_k^2} = \sum_{j=1}^n \frac{x_i x_j}{\sum_{k=1}^n x_k^2} y_j = \sum_{j=1}^n a_j y_j
+$$
+where
+$$
+a_j = \frac{x_i x_j}{\sum_{k=1}^n x_k^2}
+$$
+
+<!----------------------------------------------------------------------------->
+### Question 6
+<!----------------------------------------------------------------------------->
+
+The regression line is given by:
+$$
+y = \beta_0 + \beta_1 x
+$$
+Substituting in the fact that $\beta_0 = \bar y - \beta_1 \bar x$ implies:
+$$
+y = \bar y - \beta_1 \bar x + \beta_1 x
+$$
+Plugging in the point $(\bar x, \bar y)$ implies:
+$$
+\bar y = \bar y - \beta_1 \bar x + \beta_1 \bar x
+$$
+which obviously holds.
+
+<!----------------------------------------------------------------------------->
+### Question 7
+<!----------------------------------------------------------------------------->
+
+Skip
+
+<!----------------------------------------------------------------------------->
+### Question 8
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl03-q08a-1}
+library(MASS)
+
+lm08 <- lm(mpg ~ horsepower, data = Auto)
+summary(lm08)
+```
+
+The F-statistic indicates there is a relationship.  Based on the p-value, there is strong evidence of a negative relationship; a one unit increase in `horsepower` lowers `mpg` by 0.16.
+
+```{r isl03-q08a-2}
+predict(lm08, tibble(horsepower = c(98)), interval = "confidence")
+predict(lm08, tibble(horsepower = c(98)), interval = "prediction")
+```
+
+#### (b)
+
+```{r isl03-q08b}
+p <- ggplot(Auto) +
+  geom_point(aes(horsepower, mpg)) +
+  geom_abline(aes(intercept = coef(lm08)[1], slope = coef(lm08)[2]), col = 'red')
+p
+```
+
+#### (c)
+
+```{r isl03-q08c}
+par(mfrow = c(2, 2))
+plot(lm08)
+```
+
+The Residuals vs Fitted plot indicates potential non-linearity.
+
+<!----------------------------------------------------------------------------->
+### Question 9
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl03-q09a}
+pairs(Auto)
+```
+
+#### (b)
+
+```{r isl03-q09b}
+cor(Auto[, 1:8])
+```
+
+#### (c)
+
+```{r isl03-q09c}
+lm09 <- lm(mpg ~ . - name, data = Auto)
+summary(lm09)
+```
+
+Once again the F-statistic indidcates a relationship between `mpg` and the predicators.  The `intercept`, `displacement`, `weight`, `year`, and `origin` all have statistically significant relationships with the response.  The `year` coefficient suggest that `mpg` has been improving over time.
+
+#### (d)
+
+```{r isl03-q09d}
+par(mfrow = c(2, 2))
+plot(lm09)
+```
+
+The plots indicate some potential outliers.  Observation 14 has high leverage but a low residual.
+
+#### (e)
+
+```{r isl03-q09e}
+lm09e <- lm(mpg ~ . : . , data = Auto[, 1:8])
+summary(lm09e)
+```
+
+#### (f)
+
+Skip
+
+<!----------------------------------------------------------------------------->
+### Question 10
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl03-q10a}
+lm10 <- lm(Sales ~ Price + Urban + US, data = Carseats)
+summary(lm10)
+```
+
+#### (b)
+
+The results suggests:
+
+1. A statistically significant negative relationship between `Sales` and `price`
+2. No relationship between `Sales` and whether the store is located in an urban area
+3. A statistically significant positive relationship between `Sales` and whether the store is located in the U.S.
+
+#### (c)
+
+The model can be written:
+$$
+Sales = \beta_0 + \beta_1 \cdot Price + \beta_1 \cdot I_{Urban} + \beta_2 \cdot I_{US}
+$$
+
+#### (d)
+
+The null hypothesis that the coefficient is zero can be rejected for `Price` and `US`.
+
+#### (e)
+
+```{r isl03-q10e}
+lm10e <- lm(Sales ~ Price + US, data = Carseats)
+summary(lm10e)
+```
+
+#### (f)
+
+The second model has the same $R^2$ but a lower $RSE$.
+
+#### (g)
+
+```{r isl03-q10g}
+confint(lm10e)
+```
+
+#### (h)
+
+```{r isl03-q10h}
+par(mfrow = c(2, 2))
+plot(lm10e)
+```
+
+A few points have high leverage but low residuals.
+
+<!----------------------------------------------------------------------------->
+### Question 11
+<!----------------------------------------------------------------------------->
+
+```{r isl03-q11_}
+set.seed(1)
+x <- rnorm(100)
+y <- 2 * x + rnorm(100)
+```
+
+#### (a)
+
+```{r isl03-q11a}
+lm11 <- lm(y ~ x + 0)
+summary(lm11)
+```
+
+#### (b)
+
+```{r isl03-q11b}
+lm11b <- lm(x ~ y + 0)
+summary(lm11b)
+```
+
+#### (c)
+
+They are the same line written differently.
+
+#### (d)
+
+```{r isl03-q11d}
+sqrt(length(x) - 1) * sum(x * y) / 
+  sqrt(sum(x ^ 2) * sum(y ^ 2) - (sum(x * y)) ^ 2)
+```
+
+#### (e)
+
+Relabeling `x` and `y` in the equation above does not effect the results.
+
+#### (f)
+
+```{r isl03-q11f}
+lm11f1 <- lm(y ~ x)
+summary(lm11f1)
+lm11f2 <- lm(x ~ y)
+summary(lm11f2)
+all.equal(summary(lm11f1)[[4]][2, 3], summary(lm11f2)[[4]][2, 3])
+```
+
+<!----------------------------------------------------------------------------->
+### Question 12
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+If it is the case that $\sum_1^n x_i^2 = \sum_1^n y_i^2$ then the coefficients will be equal.
+
+#### (b)
+
+See parts (a) and (b) from Question 11.
+
+#### (c)
+
+```{r isl03-q12c}
+x <- rnorm(100)
+y <- sample(x, 100, replace = F)
+lm12c1 <- lm(y ~ x + 0)
+summary(lm12c1)
+lm12c2 <- lm(x ~ y + 0)
+summary(lm12c2)
+```
+
+<!----------------------------------------------------------------------------->
+### Question 13
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl03-q13a}
+X <- rnorm(100, 0, 1)
+```
+
+#### (b)
+
+```{r isl03-q13b}
+eps <- rnorm(100, 0, 0.25)
+```
+
+#### (c)
+
+```{r isl03-q13c}
+Y <- -1 + 0.5 * X + eps
+```
+
+The vector `Y` has the same length as `X`.  In this case, $\beta_0 = -1$ and $\beta_1 = 0.5$.
+
+#### (d)
+
+```{r isl03-q13d}
+qplot(X, Y)
+```
+
+There is a clear linear relationshihp between `X` and `Y` subject to noise.
+
+#### (e)
+
+```{r isl03-q13e}
+lm13 <- lm(Y ~ X)
+summary(lm13)
+```
+
+The estimated $\beta_0$ and $\beta_1$ are close to their actual values.
+
+#### (f)
+
+```{r isl03-q13f}
+p <- ggplot(tibble(X, Y)) +
+  geom_point(aes(X, Y)) +
+  geom_abline(aes(intercept = coef(lm13)[1], slope = coef(lm13)[2]), col = 'red')
+p
+```
+
+#### (g)
+
+```{r isl03-q13g}
+lm13g <- lm(Y ~ X + I(X ^ 2))
+summary(lm13g)
+```
+
+The polynomial regression offers no discernable improvement in fit.
+
+<!----------------------------------------------------------------------------->
+### Question 14
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+```{r isl03-q14a}
+set.seed(1)
+x1 <- runif(100)
+x2 <- 0.5 * x1 + rnorm(100) / 10
+y  <- 2 + 2 * x1 + 0.3 * x2 + rnorm(100)
+```
+
+$\beta_0 = 2$, $\beta_1 = 2$, and $\beta_3 = 0.3$.
+
+#### (b)
+
+```{r isl03-q14b}
+cor(x1, x2)
+qplot(x1, x2)
+```
+
+#### (c)
+
+```{r isl03-q14c}
+lm14c <- lm(y ~ x1 + x2)
+summary(lm14c)
+```
+
+$\beta_0 = 2.1305$, $\beta_1 = 1.4396$, and $\beta_3 = 1.0097$.  We can reject the null hypothesis for $\beta_1$ but not $\beta_2$.
+
+#### (d)
+
+```{r isl03-q14d}
+lm14d <- lm(y ~ x1)
+summary(lm14d)
+```
+
+We can reject the null hypothesis for $\beta_1$.
+
+#### (e)
+
+```{r isl03-q14e}
+lm14e <- lm(y ~ x2)
+summary(lm14e)
+```
+
+We can reject the null hypothesis for $\beta_1$.
+
+#### (f) 
+
+No. `x1` and `x2` are collinear so the results make sense.
+
+#### (g)
+
+```{r isl03-q14g}
+x1 <- c(x1, 0.1)
+x2 <- c(x2, 0.8)
+y  <- c(y, 6)
+lm14g1 <- lm(y ~ x1 + x2)
+summary(lm14g1)
+lm14g2 <- lm(y ~ x1)
+summary(lm14g2)
+lm14g3 <- lm(y ~ x2)
+summary(lm14g3)
+par(mfrow = c(2, 2))
+plot(lm14g1)
+plot(lm14g2)
+plot(lm14g3)
+```
+
+In the second model, the new observation is an outlier. In the first and third models, the new observation is a high leverage point.
+
+<!----------------------------------------------------------------------------->
+### Question 15
+<!----------------------------------------------------------------------------->
+
+#### (a)
+
+Skip
+
+#### (b)
+
+```{r isl03-q15b}
+lm15 <- lm(crim ~ ., data = Boston)
+summary(lm15)
+```
+
+#### (c)
+
+Skip
+
+#### (d)
+
+```{r isl03-q15d}
+lm15d1 <- lm(crim ~ zn, data = Boston)
+par(mfrow = c(2, 2))
+plot(lm15d1)
+summary(lm15d1)
+lm15d2 <- lm(crim ~ poly(zn, 3), data = Boston)
+summary(lm15d2)
+```

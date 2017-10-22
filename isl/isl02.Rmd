@@ -1,0 +1,108 @@
+---
+title: "ISLR: Chapter 2"
+output: html_document
+---
+
+```{r isl02-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'isl_cache/',
+  fig.path = 'isl_fig/',
+  message = F,
+  warning = F
+  )
+library(ISLR)
+load_tidy()
+```
+
+### Question 1
+
+#### (a)
+
+Better
+
+#### (b)
+
+Worse
+
+#### (c)
+
+Better
+
+#### (d)
+
+Worse
+
+### Question 2
+
+#### (a)
+
+Regression and Inference
+
+#### (b)
+
+Classification and Prediction
+
+#### (c)
+
+Regression and Prediction
+
+
+### Question 3
+
+#### (a)
+
+Skip
+
+#### (b)
+
+Bias decreases with flexibility because flexibility improves fit. Variance increases with flexibility since fit becomes more sensitive.  Training error decreases with flexibility.  Test error initially decreases then increases.  The irreducible error is flat.
+
+### Question 4
+
+Skip
+
+### Question 5
+
+The advantage of the flexible approach is a better fit (low bias) for non-linear models.  The disadvantage is that it increases variance by overfitting. A flexible might be preferred when one is interested in prediction.
+
+### Question 6
+
+A parametric approach provides an explicit functional form for the data thus reducing the estimation problem to a selection of parameters. The non-parametric approach makes no assumptions on the functional form and are designed to closely fit the data. The parametric approach has the advantage of working when there is a shortage of data.
+
+### Question 7
+
+#### (a)
+
+X1 | X2 | X3 | Y | D
+-- | -- | -- | - | -
+0 | 3 | 0 | Red | 3
+2 | 0 | 0 | Red | 2
+0 | 1 | 3 | Red | $\sqrt{10}$
+0 | 1 | 2 | Green | $\sqrt{5}$
+-1 | 0 | 1 | Green | $\sqrt{2}$
+-1 | 1 | 1 | Red | $\sqrt{3}$
+
+#### (b)
+
+Red. The nearest neighbor is (-1, 0, 1, Green).
+
+#### (c)
+
+Red. The nearest neighbors are (-1, 0, 1, Green), (-1, 1, 1, Red), and (2, 0, 0, Red).
+
+#### (d)
+
+Small. A large K will produce a linear decision boundary.
+
+### Question 8
+
+Skip
+
+### Question 9
+
+Skip
+
+### Question 10
+
+Skip
