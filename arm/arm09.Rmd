@@ -433,8 +433,10 @@ summary(reg)
 
 #### (b)
 
+Note that $v_{i,t-2}$ determines the value of $P_{it}$ (assuming no third-party candidates have been elected).  Thus, the relationship between $P_{it}$ and $v_{it}$ can be illustrated below using line segements for the cases when $v_{i,t-2} \in (0, 0.5)$ and $v_{i,t-2} \in (0.5, 1)$.
+
 ```{r arm09-q13b}
-x <- coef(reg)
+x  <- coef(reg)
 y1 <- x[1] + x[2] * c(0.0, 0.5) - x[3] - x[4]
 y2 <- x[1] + x[2] * c(0.5, 1.0) + x[3] + x[4]
 
@@ -456,5 +458,14 @@ p
 The casual effect of incumbency is valid for the data where $v_{i,t-2} \approx 0.5$; winners of close elections (and thus incumbents) are essentially randmonly assigned in these cases.
 
 ### Question 14
+
+#### (a)
+
+A simple formulation could be: let $w_i$ be the wage person $i$ receives at a job with zero risk of death, let $x_i$ be the wage person $i$ receives at a risky job $j$, let $p_j$ be the risk of death at job $j$, and finally let $u_i$ be person $i$'s utility function for wealth. Person $i$ would choose the risky job if:
+$$
+p_j u_i(x_i) + (1 - p_j) u_i(\text{dead}) > u_i(w_i)
+$$
+
+#### (b)
 
 Skip

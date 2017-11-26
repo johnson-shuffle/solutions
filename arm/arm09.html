@@ -865,7 +865,8 @@ summary(reg)</code></pre>
 </section>
 <section id="b-5" class="level4">
 <h4>(b)</h4>
-<pre class="r"><code>x &lt;- coef(reg)
+<p>Note that <span class="math inline">\(v_{i,t-2}\)</span> determines the value of <span class="math inline">\(P_{it}\)</span> (assuming no third-party candidates have been elected). Thus, the relationship between <span class="math inline">\(P_{it}\)</span> and <span class="math inline">\(v_{it}\)</span> can be illustrated below using line segements for the cases when <span class="math inline">\(v_{i,t-2} \in (0, 0.5)\)</span> and <span class="math inline">\(v_{i,t-2} \in (0.5, 1)\)</span>.</p>
+<pre class="r"><code>x  &lt;- coef(reg)
 y1 &lt;- x[1] + x[2] * c(0.0, 0.5) - x[3] - x[4]
 y2 &lt;- x[1] + x[2] * c(0.5, 1.0) + x[3] + x[4]
 
@@ -889,7 +890,16 @@ p</code></pre>
 </section>
 <section id="question-14" class="level3">
 <h3>Question 14</h3>
+<section id="a-6" class="level4">
+<h4>(a)</h4>
+<p>A simple formulation could be: let <span class="math inline">\(w_i\)</span> be the wage person <span class="math inline">\(i\)</span> receives at a job with zero risk of death, let <span class="math inline">\(x_i\)</span> be the wage person <span class="math inline">\(i\)</span> receives at a risky job <span class="math inline">\(j\)</span>, let <span class="math inline">\(p_j\)</span> be the risk of death at job <span class="math inline">\(j\)</span>, and finally let <span class="math inline">\(u_i\)</span> be person <span class="math inline">\(i\)</span>’s utility function for wealth. Person <span class="math inline">\(i\)</span> would choose the risky job if: <span class="math display">\[
+p_j u_i(x_i) + (1 - p_j) u_i(\text{dead}) &gt; u_i(w_i)
+\]</span></p>
+</section>
+<section id="b-6" class="level4">
+<h4>(b)</h4>
 <p>Skip</p>
+</section>
 </section>
 
 

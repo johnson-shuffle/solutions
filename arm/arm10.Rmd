@@ -1,0 +1,307 @@
+---
+title: 'ARM: Chapter 10'
+output: html_document
+---
+
+```{r arm10-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'arm_cache/',
+  fig.path = 'arm_fig/',
+  message = F,
+  warning = F
+  )
+library(arm)
+load_tidy()
+
+# arm link
+arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
+
+# arm functions
+walk(list.files('./arm/arm_fun', full.names = T), source)
+```
+
+### Question 1
+
+#### (a)
+
+Note that the experimental data can be loaded via the `arm` package.
+
+```{r arm10-q01a}
+data(lalonde)
+
+Tr <- lalonde$treat == 1
+
+# (i)
+benchmark <- mean(lalonde$re78[Tr]) - mean(lalonde$re78[!Tr])
+
+## (ii)
+reg_a <- lm(
+  re78 ~ treat + re74 + re75 + age + educ + black + hisp + married + nodegr,
+  data = lalonde
+)
+summary(reg_a)
+```
+
+#### (b)
+
+```{r arm10-q01b-1}
+# dehejia and wahba data
+dat <- read_stata(str_c(arm_url, 'lalonde/NSW.dw.obs.dta'))
+dat %<>% rename(nodegr = nodegree)
+
+# (a)
+reg_b <- lm(
+  re78 ~ treat + re74 + re75 + age + educ + black + hisp + married + nodegr,
+  data = dat
+)
+summary(reg_b)
+
+# no indicators
+reg_ni <- lm(
+  re78 ~ treat + re74 + re75,
+  data = dat
+)
+summary(reg_ni)
+
+# interactions
+m <- 're78 ~ treat + re74 + re75 + age + educ + black + hisp + married + nodegr'
+m <- str_c(m, ' + black:nodegr + hisp:nodegr + married:nodegr')
+reg_in <- lm(as.formula(m), data = dat)
+summary(reg_in)
+```
+
+The point estimate of the effect is sensitive to specification but significance is not; the effect cannot be distinguished from zero for any of the three specifications.
+
+```{r arm10-q01b-2}
+pdat <- map(list(reg_a, reg_b, reg_ni, reg_in), tidy)
+pdat <- map_dfr(1:4, function(x) { pdat[[x]]$model <- x ; pdat[[x]] })
+pdat %<>% filter(term == 'treat')
+
+p <- ggplot(aes(factor(model), estimate), data = pdat) +
+  geom_point() +
+  geom_errorbar(
+    aes(ymin = estimate - 2 * std.error, ymax = estimate + 2 * std.error),
+    width = 0.2
+  ) +
+  geom_hline(aes(yintercept = 0), col = 'red') +
+  geom_hline(aes(yintercept = benchmark), linetype = 2) +
+  scale_x_discrete(
+    labels = c('lalonde', '(a)', 'no indicators', 'interactions')
+    ) +
+  labs(x = 'model', y = 'effect')
+p
+```
+
+#### (c)
+
+```{r arm10-q01c-1}
+mod <- 'treat ~ re74 + re75 + age + educ + black + hisp + married + nodegr
+  + black:nodegr + hisp:nodegr + married:nodegr + I(age ^ 2)'
+psm <- glm(
+  mod,
+  data = dat,
+  family = binomial(link = 'logit')
+)
+mat <- matching(z = dat$treat, score = predict(psm, type = 'link'))
+mat <- dat[mat$matched, ]
+bal <- do.call(rbind, balance(dat, mat, psm)[1:2])
+bal %<>% as_tibble() %>%
+  mutate(
+    type = c(rep(0, nrow(bal) / 2), rep(1, nrow(bal) / 2)),
+    var  = row.names(bal)
+  )
+p <- ggplot(bal) +
+  geom_point(aes(var, diff.std, shape = factor(type))) +
+  scale_shape_manual(
+    name = 'type',
+    values = c(1, 16), labels = c('unmatched', 'matched')
+    ) +
+  guides(shape = F) +
+  coord_flip() +
+  labs(x = 'standardized difference in means', y = 'input')
+p
+````
+
+```{r arm10-q01c-2}
+Tr <- mat$treat == 1
+
+# (i)
+mean(mat$re78[Tr]) - mean(mat$re78[!Tr])
+
+## (ii)
+reg_c <- lm(
+  re78 ~ treat + re74 + re75 + age + educ + black + hisp + married + nodegr,
+  data = mat
+)
+summary(reg_c)
+```
+
+The results are quite close to the experimental benchmark.
+
+#### (d)
+
+For those eligible for the NSW program, participation -- on average -- caused an $`r round(coef(reg_c)['treat'], digits = 2)`  increase in 1978 earnings.
+
+#### (e)
+
+```{r arm10-q01d-1}
+mod <- 'treat ~ re75 + age + educ + black + hisp + married + nodegr
+  + black:nodegr + hisp:nodegr + married:nodegr + I(age ^ 2)'
+psm <- glm(
+  mod,
+  data = dat,
+  family = binomial(link = 'logit')
+)
+mat <- matching(z = dat$treat, score = predict(psm, type = 'link'))
+mat <- dat[mat$matched, ]
+bal <- do.call(rbind, balance(dat, mat, psm)[1:2])
+bal %<>% as_tibble() %>%
+  mutate(
+    type = c(rep(0, nrow(bal) / 2), rep(1, nrow(bal) / 2)),
+    var  = row.names(bal)
+  )
+# p <- ggplot(bal) +
+#   geom_point(aes(var, diff.std, shape = factor(type))) +
+#   scale_shape_manual(
+#     name = 'type',
+#     values = c(1, 16), labels = c('unmatched', 'matched')
+#     ) +
+#   guides(shape = F) +
+#   coord_flip() +
+#   labs(x = 'standardized difference in means', y = 'input')
+# p 
+````
+
+```{r arm10-q01d-2}
+Tr <- mat$treat == 1
+
+# (i)
+mean(mat$re78[Tr]) - mean(mat$re78[!Tr])
+
+## (ii)
+reg_d <- lm(
+  re78 ~ treat + re75 + age + educ + black + hisp + married + nodegr,
+  data = mat
+)
+summary(reg_d)
+```
+
+Removing `re74` does impact the point estimate of the treatment effect but the benchmark value is still included in the 95% confidence interval.
+
+### Question 2
+
+#### (a)
+
+Conceptually, a regression discontinuity framework seems appropriate.
+
+#### (b)
+
+```{r arm10-q02b}
+dat <- read_delim(str_c(arm_url, 'bypass/bypass.data.txt'), delim = '\t')
+
+p <- ggplot(dat) +
+  geom_point(aes(age, stay, shape = factor(new))) +
+  scale_shape_manual(name = 'Tr', values = c(16, 1))
+p
+```
+
+The plot above does not seem to support the regression discontinuity design; there is no apparent jump at the cutoff.  There is also partial overlap which could potentially make the design inappropriate.
+
+#### (c)
+
+```{r arm10-q02c}
+lower <- min(dat$age[dat$new == 0])
+upper <- max(dat$age[dat$new == 1])
+
+# w/o severity
+reg1 <- lm(
+  stay ~ new + age,
+  data = filter(dat, age >= lower & age <= upper)
+  )
+summary(reg1)
+
+# w/ severity
+reg2 <- lm(
+  stay ~ new + age + severity,
+  data = filter(dat, age >= lower & age <= upper)
+  )
+summary(reg2)
+```
+
+The first regression shows that the new procedure results in approximately one fewer day in the hospital; however, this effect is not statistically significant.  The second regression shows that the new procedure results in approximately five fewer days.  Clearly, severity is a confounder that needs to be controlled for.
+
+### Question 3
+
+Rather than tell a specific story let's just simulate some data the regression framework.
+
+#### (a)
+
+```{r arm10-q03a}
+set.seed(1)
+
+z  <- rbinom(100, 1, 0.5)
+Tr <- 1 + z + rnorm(100, 0, 0.5)
+Tr <- as.numeric(Tr >= mean(Tr))
+y  <- 10 + 20 * Tr + 0 * z + rnorm(100, 0, 1)
+
+# wald estimator
+f1 <- lm(Tr ~ z)
+f2 <- lm(y ~ z)
+coef(f2)[['z']] / coef(f1)[['z']]
+
+# two-stage estimator
+f3 <- lm(Tr ~ z)
+f4 <- lm(y ~ f3$fitted.values)
+coef(f4)[[2]]
+```
+
+#### (b)
+
+```{r arm10-q03b}
+set.seed(2)
+
+z  <- rbinom(100, 1, 0.5)
+Tr <- 1 + z + rnorm(100, 0, 0.5)
+Tr <- as.numeric(Tr >= mean(Tr))
+Tr[sample(grep(1, Tr), 10)] <- 0  # 80% compliance
+y  <- 10 + 20 * Tr + 10 * z + rnorm(100, 0, 1)
+
+f1 <- lm(Tr ~ z)
+f2 <- lm(y ~ z)
+coef(f2)[['z']] / coef(f1)[['z']]
+```
+
+#### (c)
+
+```{r arm10-q03c}
+set.seed(3)
+
+z  <- rbinom(100, 1, 0.5)
+Tr <- 1 + z + rnorm(100, 0, 0.5)
+Tr <- as.numeric(Tr >= mean(Tr))
+Tr[sample(grep(1, Tr), 40)] <- 0  # 20% compliance
+y  <- 10 + 20 * Tr + 10 * z + rnorm(100, 0, 1)
+
+f1 <- lm(Tr ~ z)
+f2 <- lm(y ~ z)
+coef(f2)[['z']] / coef(f1)[['z']]
+```
+
+### Question 4
+
+#### (a)
+
+Contributions are potentially an intermediate outcome since incumbency undoubtedly plays a role in how much money a candidate can raise.
+
+#### (b)
+
+The treatment variable would be money raised by the candidate and the outcome would be her corresponding vote share in the election.
+
+#### (c)
+
+Ignorability of the instrument is likely satisfied since incumbency is essentially randomly assigned for close elections (regression discontinuity design). The exclusion restriction will not be satisfied since incumbency is likely to have it's own direct effect on a candidate's vote share (indeed, this was explored in Exercise 9.13).
+
+#### (d)
+
+Candidate wealth could be used an instrument instead of incumbency; this would likely impact money raised by the candidate but perhaps not the votes they receive in the election.
