@@ -233,7 +233,7 @@ The first regression shows that the new procedure results in approximately one f
 
 ### Question 3
 
-Rather than tell a specific story let's just simulate some data the regression framework.
+Rather than tell a specific story let's just simulate some data using the regression framework.
 
 #### (a)
 

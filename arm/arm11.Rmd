@@ -1,0 +1,143 @@
+---
+title: 'ARM: Chapter 11'
+output: html_document
+---
+
+```{r arm11-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = 'arm_cache/',
+  fig.path = 'arm_fig/',
+  message = F,
+  warning = F
+  )
+library(arm)
+load_tidy()
+
+# arm link
+arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
+
+# arm functions
+walk(list.files('./arm/arm_fun', full.names = T), source)
+```
+
+### Question 1
+
+*The file apt.dat in the folder rodents contains data on rodent infestation in a sample of New York City apartments (see codebook rodents.doc). The file dist.dat contains data on the 55 "community districts" (neighborhoods) in the city.*
+
+```{r arm11-q01_}
+apt <- read.table(str_c(arm_url, 'rodents/apt.dat'))
+dis <- read.table(str_c(arm_url, 'rodents/dist.dat'))
+```
+
+#### (a)
+
+*Write the notation for a varying-intercept multilevel logistic regression (with community districts as the groups) for the probability of rodent infestation using the individual-level predictors but no group-level predictors.*
+
+$$
+P(y_{ij} = 1) = \text{logit}^{-1} \left( \beta_0 + \beta_1 \times \text{defects}_i + \beta_2 \times \text{race}_i + \beta_3 \times \text{floor}_i + \beta_4 \times \text{bldg}_i + \alpha_j \right)
+$$
+
+#### (b)
+
+*Expand the model in (a) by including the variables in dist.dat as group-level predictors.*
+
+$$
+\begin{align}
+P(y_{i} = 1) &= \text{logit}^{-1} \left( \beta_0 + \beta_1 \times \text{defects}_i + \beta_2 \times \text{race}_i + \beta_3 \times \text{floor}_i + \beta_4 \times \text{bldg}_i + \alpha_{j[i]} \right) \\
+\alpha_{j[i]} &\sim N \left( \gamma_0 + \gamma_1 \times \text{defects}_j + \gamma_2 \times \text{poor}_j, \sigma_{\alpha} ^ 2 \right)
+\end{align}
+$$
+
+### Question 2
+
+Skip
+
+### Question 3
+
+*The folder olympics has seven judges’ ratings of seven figure skaters (on two criteria: “technical merit” and “artistic impression”) from the 1932 Winter Olympics.*
+
+```{r arm11-q03_}
+win32 <- read_table2(str_c(arm_url, 'olympics/olympics1932.txt'), skip = 20)
+```
+
+#### (a)
+
+*Construct a 7 × 7 × 2 array of the data (ordered by skater, judge, and judging criterion).*
+
+```{r arm11-q03a}
+pro32 <- cbind(1:7, win32[seq(1, 14, by = 2), 3:9])
+per32 <- cbind(1:7, win32[seq(2, 14, by = 2), 2:8])
+names(pro32) <- c('pair', str_c('judge_', 1:7))
+names(per32) <- c('pair', str_c('judge_', 1:7))
+```
+
+#### (b)
+
+*Reformulate the data as a 98×4 array (similar to the top table in Figure 11.7), where the first two columns are the technical merit and artistic impression scores, the third column is a skater ID, and the fourth column is a judge ID.*
+
+```{r arm11-q03b}
+dat <- left_join(
+  gather(pro32, judge, score, -pair),
+  gather(per32, judge, score, -pair),
+  by = c('pair', 'judge')
+)
+dat %<>% mutate_at(vars(score.x, score.y), as.numeric)
+dat$judge %<>% str_replace_all('judge_', '') %>% as.numeric()
+names(dat)[3:4] <- c('tech', 'perf')
+dat <- dat[c(3:4, 1:2)]
+```
+
+#### (c)
+
+*Add another column to this matrix representing an indicator variable that equals 1 if the skater and judge are from the same country, or 0 otherwise.*
+
+```{r arm11-q03c}
+dat %<>%
+  mutate(
+    same = 0,
+    same = if_else(pair == 1 & judge == 5, 1, same),
+    same = if_else(pair == 2 & judge == 7, 1, same),
+    same = if_else(pair == 3 & judge == 1, 1, same),
+    same = if_else(pair == 4 & judge == 1, 1, same),
+    same = if_else(pair == 7 & judge == 7, 1, same)
+  )
+```
+
+### Question 4
+
+*The folder cd4 has CD4 percentages for a set of young children with HIV who were measured several times over a period of two years. The dataset also includes the ages of the children at each measurement.*
+
+#### (a)
+
+*Graph the outcome (the CD4 percentage, on the square root scale) for each child as a function of time.*
+
+```{r arm11-q04a}
+cd4 <- read_csv(str_c(arm_url, 'cd4/allvar.csv'))
+cd4 %<>% mutate(time = visage - baseage)
+
+p <- ggplot(cd4) +
+  geom_line(aes(time, CD4PCT, colour = factor(newpid))) +
+  scale_y_sqrt() +
+  guides(colour = F)
+p
+```
+
+#### (b)
+
+*Each child’s data has a time course that can be summarized by a linear fit. Estimate these lines and plot them for all the children.*
+
+```{r arm11-q04b}
+p <- ggplot(cd4) +
+  geom_point(aes(time, sqrt(CD4PCT), colour = factor(newpid))) +
+  geom_smooth(
+    aes(time, sqrt(CD4PCT), colour = factor(newpid)),
+    method = 'lm', se = F
+    ) +
+  guides(colour = F)
+p
+```
+
+#### (c)
+
+*Set up a model for the children’s slopes and intercepts as a function of the treatment and age at baseline. Estimate this model using the two-step procedure–first estimate the intercept and slope separately for each child, then fit the between-child models using the point estimates from the first step.*

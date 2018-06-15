@@ -1,7 +1,12 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
+*.RData
+*.Rda
+*.Rhistory
+*.Rprofile
+*.Rproj.user
+*.Rproj
+*.Ruserdata
+*.DS_Store
 .DS_Store
 /arm/arm_cache
 /isl/isl_cache
+/cim/cim_cache

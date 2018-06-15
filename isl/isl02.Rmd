@@ -15,38 +15,41 @@ library(ISLR)
 load_tidy()
 ```
 
-### Question 1
+### 1. For each of parts (a) through (d), indicate whether we would generally expect the performance of a flexible statistical learning method to be better or worse than an inflexible method. Justify your answer.
 
-#### (a)
+#### (a) The sample size n is extremely large, and the number of predictors p is small.
 
-Better
+Better. The flexible method can take advantage of the large sample size.
 
 #### (b)
 
-Worse
+Worse. The flexible method is more likely to overfit in this case.
 
 #### (c)
 
-Better
+Better. The flexible method is better-suited to a non-linear data generating process (DGP).
 
 #### (d)
 
-Worse
+Worse. The flexible method is more sensitive to the large amount of noise in the DGP.
 
 ### Question 2
 
+*Explain whether each scenario is a classification or regression problem, and indicate whether we are most interested in inference or prediction. Finally, provide n and p.*
+
 #### (a)
 
-Regression and Inference
+*We collect a set of data on the top 500 firms in the US. For each firm we record profit, number of employees, industry and the CEO salary. We are interested in understanding which factors affect CEO salary.*
+
+Regression and inference. $n = 500$ and $p = 4$.
 
 #### (b)
 
-Classification and Prediction
+Classification and prediction. $n = 20$ and $p = 14$.
 
-#### (c)
+#### (c) 
 
-Regression and Prediction
-
+Regression and prediction. $n = 52$ and $p = 3$.
 
 ### Question 3
 
