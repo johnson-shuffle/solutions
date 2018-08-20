@@ -1,0 +1,113 @@
+Statistical Learning
+================
+
+### 1\.
+
+#### (a)
+
+Better. The flexible method can take advantage of the large sample size.
+
+#### (b)
+
+Worse. The flexible method is more likely to overfit in this case.
+
+#### (c)
+
+Better. The flexible method is better-suited to a non-linear data
+generating process (DGP).
+
+#### (d)
+
+Worse. The flexible method is more sensitive to the large amount of
+noise in the DGP.
+
+### Question 2
+
+#### (a)
+
+Regression and inference. ![n
+= 500](https://latex.codecogs.com/png.latex?n%20%3D%20500 "n = 500") and
+![p = 4](https://latex.codecogs.com/png.latex?p%20%3D%204 "p = 4").
+
+#### (b)
+
+Classification and prediction. ![n
+= 20](https://latex.codecogs.com/png.latex?n%20%3D%2020 "n = 20") and
+![p = 14](https://latex.codecogs.com/png.latex?p%20%3D%2014 "p = 14").
+
+#### (c)
+
+Regression and prediction. ![n
+= 52](https://latex.codecogs.com/png.latex?n%20%3D%2052 "n = 52") and
+![p = 3](https://latex.codecogs.com/png.latex?p%20%3D%203 "p = 3").
+
+### Question 3
+
+#### (a)
+
+Skip
+
+#### (b)
+
+Bias decreases with flexibility because flexibility improves fit.
+Variance increases with flexibility since fit becomes more sensitive.
+Training error decreases with flexibility. Test error initially
+decreases then increases. The irreducible error is flat.
+
+### Question 4
+
+Skip
+
+### Question 5
+
+The advantage of the flexible approach is a better fit (low bias) for
+non-linear models. The disadvantage is that it increases variance by
+overfitting. A flexible might be preferred when one is interested in
+prediction.
+
+### Question 6
+
+A parametric approach provides an explicit functional form for the data
+thus reducing the estimation problem to a selection of parameters. The
+non-parametric approach makes no assumptions on the functional form and
+are designed to closely fit the data. The parametric approach has the
+advantage of working when there is a shortage of
+data.
+
+### Question 7
+
+#### (a)
+
+| X1  | X2 | X3 | Y     | D                                                                                |
+| --- | -- | -- | ----- | -------------------------------------------------------------------------------- |
+| 0   | 3  | 0  | Red   | 3                                                                                |
+| 2   | 0  | 0  | Red   | 2                                                                                |
+| 0   | 1  | 3  | Red   | ![\\sqrt{10}](https://latex.codecogs.com/png.latex?%5Csqrt%7B10%7D "\\sqrt{10}") |
+| 0   | 1  | 2  | Green | ![\\sqrt{5}](https://latex.codecogs.com/png.latex?%5Csqrt%7B5%7D "\\sqrt{5}")    |
+| \-1 | 0  | 1  | Green | ![\\sqrt{2}](https://latex.codecogs.com/png.latex?%5Csqrt%7B2%7D "\\sqrt{2}")    |
+| \-1 | 1  | 1  | Red   | ![\\sqrt{3}](https://latex.codecogs.com/png.latex?%5Csqrt%7B3%7D "\\sqrt{3}")    |
+
+#### (b)
+
+Red. The nearest neighbor is (-1, 0, 1, Green).
+
+#### (c)
+
+Red. The nearest neighbors are (-1, 0, 1, Green), (-1, 1, 1, Red), and
+(2, 0, 0, Red).
+
+#### (d)
+
+Small. A large K will produce a linear decision boundary.
+
+### Question 8
+
+Skip
+
+### Question 9
+
+Skip
+
+### Question 10
+
+Skip

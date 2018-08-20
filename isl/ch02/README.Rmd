@@ -1,13 +1,22 @@
 ---
-title: "ISLR: Chapter 2"
-output: html_document
+title: "Statistical Learning"
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+    pandoc_args: --webtex
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r isl02-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'isl_cache/',
-  fig.path = 'isl_fig/',
+  cache.path = '../isl_cache/',
+  fig.path = '../isl_fig/',
   message = F,
   warning = F
   )
@@ -15,9 +24,9 @@ library(ISLR)
 load_tidy()
 ```
 
-### 1. For each of parts (a) through (d), indicate whether we would generally expect the performance of a flexible statistical learning method to be better or worse than an inflexible method. Justify your answer.
+### 1.
 
-#### (a) The sample size n is extremely large, and the number of predictors p is small.
+#### (a)
 
 Better. The flexible method can take advantage of the large sample size.
 
@@ -35,11 +44,7 @@ Worse. The flexible method is more sensitive to the large amount of noise in the
 
 ### Question 2
 
-*Explain whether each scenario is a classification or regression problem, and indicate whether we are most interested in inference or prediction. Finally, provide n and p.*
-
 #### (a)
-
-*We collect a set of data on the top 500 firms in the US. For each firm we record profit, number of employees, industry and the CEO salary. We are interested in understanding which factors affect CEO salary.*
 
 Regression and inference. $n = 500$ and $p = 4$.
 

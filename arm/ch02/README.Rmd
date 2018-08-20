@@ -1,13 +1,22 @@
 ---
-title: 'ARM: Chapter 2'
-output: html_document
+title: "Concepts and methods from basic probability and statistics"
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+    pandoc_args: --webtex
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm02-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
