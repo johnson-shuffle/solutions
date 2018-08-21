@@ -23,3 +23,11 @@ Methods](https://github.com/johnson-shuffle/solutions/tree/master/isl/ch05)
 
 [Linear Model Selection and
 Regularization](https://github.com/johnson-shuffle/solutions/tree/master/isl/ch06)
+
+Moving Beyond Linearity
+
+Tree-Based Methods
+
+Support Vector Machines
+
+Unsupervised Learning

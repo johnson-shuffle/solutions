@@ -4,13 +4,13 @@
 ## Overview
 
 This repository contains the code used in solutions to the exerices from
-the textbooks listed below. In many cases the solutions are incomplete
-and mistakes are practically guaranteed.
-
-## Textbooks
+the textbooks:
 
   - [Data Analysis Using Regression and Multilevel/Hierarchical
     Models](https://github.com/johnson-shuffle/solutions/tree/master/arm)
 
   - [An Introduction to Statistical Learning: With Applications in
     R](https://github.com/johnson-shuffle/solutions/tree/master/isl)
+
+Note that in many cases the **solutions are incomplete** and **mistakes
+are practically guaranteed**.

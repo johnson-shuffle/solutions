@@ -39,3 +39,32 @@ models](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch10)
 
 [Multilevel
 structures](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch11)
+
+Multilevel linear models: the basics
+
+Multilevel linear models: varying slopes, non-nested models, and other
+complexities
+
+Multilevel logistic regression
+
+Multilevel generalized linear models
+
+Multilevel modeling in Bugs and R: the basics
+
+Fitting multilevel linear and generalized linear models in Bugs and R
+
+Likelihood and Bayesian inference and computation
+
+Debugging and speeding convergence
+
+Sample size and power calculations
+
+Understanding and summarizing the fitted models
+
+Analysis of variance
+
+Causal inference using multilevel models
+
+Model checking and comparison
+
+Missing-data imputation
