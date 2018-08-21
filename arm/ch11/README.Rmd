@@ -14,8 +14,8 @@ editor_options:
 ```{r arm11-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )

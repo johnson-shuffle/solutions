@@ -85,7 +85,7 @@ p <- ggplot(cd4) +
 p
 ```
 
-![](arm_fig/arm11-q04a-1.png)<!-- -->
+![](../arm_fig/arm11-q04a-1.png)<!-- -->
 
 ### (b)
 
@@ -100,6 +100,6 @@ p <- ggplot(cd4) +
 p
 ```
 
-![](arm_fig/arm11-q04b-1.png)<!-- -->
+![](../arm_fig/arm11-q04b-1.png)<!-- -->
 
 ### (c)
