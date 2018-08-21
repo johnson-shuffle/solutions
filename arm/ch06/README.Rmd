@@ -1,13 +1,21 @@
 ---
-title: 'ARM: Chapter 6'
-output: html_document
+title: 'Generalized linear models'
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm06-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
@@ -18,7 +26,7 @@ load_tidy()
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
-### Question 1
+## Question 1
 
 Import the data:
 
@@ -31,7 +39,7 @@ dat %<>% filter(bupacts != 0)
 ```
 
 
-#### (a)
+### (a)
 
 ```{r arm06-q01a}
 rega <- glm(
@@ -49,7 +57,7 @@ pchisq(sum(fu_hat ^ 2), 420 - 3)
 
 Based on the reduction in deviance, the model does help explain the reduction in ``number of unprotected sex acts."  However, the overdispersion factor is `r sum(z ^ 2) / 417` which is huge.
 
-#### (b)
+### (b)
 
 ```{r arm06-q01b}
 regb <- glm(
@@ -67,7 +75,7 @@ pchisq(sum(z ^ 2), 420 - 4)
 
 Presumably, inclusion of pre-treatment measure of the outcome means adding `bupacts` as an offset.  Adding baseline HIV status does not affect the previous coefficients.  Furthermore, the coefficient on HIV status seems plausible and is statistically significant.  However, the over-dispersion factor is `r sum(z ^ 2) / 416` which is huge.
 
-#### (c)
+### (c)
 
 ```{r arm06-q01c}
 regc <- glm(
@@ -81,16 +89,18 @@ summary(regc)
 
 The intervention is justified and the results (with regard to treatment) appear robust.
 
-#### (d)
+### (d)
 
 If responses from both the man and the woman in a couple are being included then this is a problem since these observations will be correlated and not i.i.d.
 
-### Question 2
+## Question 2
 
 Import the data and estimate the model given by:
+
 $$
 z_{i} = X_i \beta  + \epsilon_{i}
 $$
+
 $$
 y_{i} = \begin{cases} 
 D &\text{ if } z_{i} \lt c_{D|I} \\ 
@@ -112,7 +122,7 @@ reg <- polr(
   )
 ```
 
-#### (a)
+### (a)
 
 ```{r arm06-q02a}
 summary(reg)
@@ -152,17 +162,20 @@ p <- ggplot(pdat) +
 p
 ```
 
-#### (b)
+### (b)
 
 Skip
 
-#### (c)
+### (c)
 
 The variance of an individual observation is:
+
 $$
 \sigma^2 = p_D + 4 p_I + 9 p_R - \left( p_D + 2 p_I + 3 p_R \right)^2
 $$
+
 so that the standard error for a sample of size $n$ is:
+
 $$
 s = \sqrt{\frac{\sigma}{n}}
 $$
@@ -206,7 +219,7 @@ p
 table(abs(pdat_bin$resid) < pdat_bin$upper)
 ```
 
-### Question 3
+## Question 3
 
 ```{r arm06-q03_}
 dat_92 <- dat %>% 
@@ -232,16 +245,18 @@ regl <- glm(
 regl$coefficients / (regp$coefficients * 1.6)
 ```
 
-### Question 4
+## Question 4
 
 Skip
 
-### Question 5
+## Question 5
 
 The Tobit model is given by:
+
 $$
 y_i^* = X_i \beta + \epsilon_i
 $$
+
 $$
 y_i =
 \begin{cases}
@@ -249,6 +264,7 @@ y_i =
   0     &\text{ if } y_i^* \leq 0
 \end{cases}
 $$
+
 where $y_i$ corresponds to individual $i$'s post-treatment earnings.
 
 ```{r arm06-q05_1}
@@ -275,7 +291,7 @@ reg <- vglm(
 summary(reg)
 ```
 
-### Question 6
+## Question 6
 
 Import the data:
 
@@ -312,7 +328,7 @@ dat %<>% mutate(
   )
 ```
 
-#### (a)
+### (a)
 
 ```{r arm06-q06a}
 rega <- lm(dshare88 ~ dshare86 + incumb88, data = dat)
@@ -320,7 +336,7 @@ summary(rega)
 ba <- rega$coefficients
 ```
 
-#### (b)
+### (b)
 
 ```{r arm06-q06b}
 library(hett)
@@ -331,6 +347,7 @@ bb <- regb$loc.fit$coefficients
 ```
 
 ```{r arm06-q06c}
+
 # plot
 p <- ggplot(dat) +
   geom_point(
@@ -382,13 +399,13 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (c)
+### (c)
 
 The models have similar coefficients although `tlm()` seems to account better for the outliers in some of the elections where incumbents lost.
 
-### Question 7
+## Question 7
 
-#### (a)
+### (a)
 
 ```{r arm06-q07a}
 dat %<>% mutate(
@@ -403,17 +420,22 @@ regl <- glm(
 summary(regl)
 ```
 
-#### (b)
+### (b)
 
 The model is given:
+
 $$
 P(\text{Democrat wins}) = P(X_i \beta + \epsilon_i > 0)
 $$
+
 where:
+
 $$
 \epsilon_i \sim t_\nu \left( 0, \frac{\nu - 2}{\nu} \right)
 $$
+
 which is estimated using maximum likelihood and the EM-type algorithm taken from [here](http://www.stat.purdue.edu/~chuanhai/teaching/Stat598A/robit.pdf):
+
 ```{r arm06-q07b}
 robit_em <- function(par, y, X, tol = 1E-5, maxiter = 1000) {
   
@@ -486,27 +508,30 @@ regr <- robit_em(par0, y, X)
 print(regr)
 ```
 
-#### (c)
+### (c)
 
 Given the above, it would appear a standard probit model would work best in this case (i.e. $\nu \rightarrow \infty$).
 
-### Question 8
+## Question 8
 
 Skip
 
-### Question 9
+## Question 9
 
 Skip
 
-### Question 10
+## Question 10
 
-#### (a)
+### (a)
 
 Voter $i$'s ideal point is given by:
+
 $$
 \theta_i = X_i \beta + \epsilon_i
 $$
+
 with the voter's utility for candidates $A$ and $B$ given by:
+
 $$
 \begin{align}
 u_{iA} &= || \theta_i - \theta_A || ^ 2 = \theta_i ^ 2 - \theta_i \theta_A + \theta_A ^ 2 \\
@@ -514,22 +539,28 @@ u_{iB} &= || \theta_i - \theta_B || ^ 2 = \theta_i ^ 2 - \theta_i \theta_B + \th
 \end{align}
 $$
 
-#### (b)
+### (b)
 
 The voter will choose candidate $A$ if:
+
 $$
 u_{iA} > u_{iB} \iff \theta_A ^ 2 - \theta_B ^ 2 + (\theta_B - \theta_A) \theta_i > 0
 $$
+
 or equivalently:
+
 $$
 -\epsilon_i < \frac{(\theta_A ^ 2 - \theta_B ^ 2)}{(\theta_B - \theta_A)} + X_i \beta
 $$
+
 Relabeling and using the distributional assumption for $\epsilon_i$ imply:
+
 $$
 P(\text{voter i chooses A}) = \Phi(\alpha + X_i \beta)
 $$
+
 where $\Phi(\cdot)$ is the CDF for a standard normal.
 
-### Question 11
+## Question 11
 
 Skip

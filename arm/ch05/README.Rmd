@@ -1,13 +1,21 @@
 ---
-title: 'ARM: Chapter 5'
-output: html_document
+title: 'Logistic regression'
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm05-pre, echo = F, message = F} 
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
@@ -17,7 +25,8 @@ library(arm)
 # arm link
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
-### Question 1
+
+## Question 1
 
 Import the data:
 
@@ -25,7 +34,8 @@ Import the data:
 dat <- read_stata(str_c(arm_url, 'nes/nes5200_processed_voters_realideo.dta'))
 ```
 
-#### (a)
+### (a)
+
 Unfortunately, the data is not accompanied by a description of the variables.
 
 ```{r arm05-q01a-1}
@@ -53,10 +63,13 @@ dat_92 <- model.frame(reg) %>%
 ```
 
 Recall that the variance of an individual observation is:
+
 $$
 \sigma^2 = p(1-p)
 $$
+
 so that the standard error for a sample of size $n$ is:
+
 $$
 s = \sqrt{\frac{\sigma}{n}}
 $$
@@ -90,32 +103,39 @@ p
 table(abs(dat_92_bin$resid) < dat_92_bin$upper)
 ```
 
-#### (b)
-The above model has coefficients consistent with expecation: weathly white Republican respondents are more likely to support Bush.  Conversely, more educated and respondents are more likely to support to Clinton.
+### (b)
 
-The binned residual plot suggests the model has problems; only half of the predictions are consistent with the model being true.
+The above model has coefficients consistent with expecation: weathly white Republican respondents are more likely to support Bush.  Conversely, more educated respondents are more likely to support to Clinton.
 
-#### (c)
-Skip
+The binned residual plot suggests the model fits reasonable well; `r round(14 / 20, digits = 2) * 100` percent of the predictions are consistent with the model being true.
 
-### Question 2
+### (c)
 
 Skip
 
-### Question 3
+## Question 2
+
+Skip
+
+## Question 3
 
 The model is given by:
+
 $$
 \text{Pr}(\text{graduation}_i = 1) = \text{logit}^{-1} \left( \alpha + \beta \times \text{income}_i \right)
 $$
+
 and we are given the information that:
+
 $$
 \begin{align}
 0.27 &= \text{logit}^{-1} \left( \alpha \right) \\
 0.81 &= \text{logit}^{-1} \left (\alpha + \beta \times 6 \right)
 \end{align}
 $$
+
 which implies:
+
 $$
 \begin{align}
 \alpha &= \ln(0.27) - \ln(1 - 0.27) = `r log(0.27) - log(1 - 0.27)` \\
@@ -123,13 +143,14 @@ $$
 \end{align}
 $$
 
-### Question 4
+## Question 4
 
 Skip
 
-### Question 5
+## Question 5
 
-#### (a) 
+### (a)
+
 Steps to create consistent data:
 
 1. Simulate test scores
@@ -153,20 +174,28 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (b)
+### (b)
+
 The transformation is given by:
+
 $$
 Z = \frac{X - 60}{15}
 $$
+
 with the fitted model being:
+
 $$
 \text{Pr} (\text{pass}) = \text{logit}^{-1} (\beta' z)
 $$
+
 Recall that $z=0$ implies a test score of 60 which translates to $\text{Pr} (\text{pass}) = 0$; hence, the model has no constant term.  Substituting we have:
+
 $$
 \text{Pr} (\text{pass}) = - 1.6 + \underbrace{(0.027 \times \beta')}_{=\beta} x
 $$
+
 so that:
+
 $$
 \beta' = \frac{0.4}{0.027} 
 $$
@@ -183,7 +212,7 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (c)
+### (c)
 
 ```{r arm05-q05c}
 dat <- dat %>% mutate(noise = score + rnorm(50, 0, 1))
@@ -193,11 +222,13 @@ reg2 <- glm(pass ~ score + noise, data = dat, family = binomial(link = 'logit'))
 
 summary(reg1)$deviance - summary(reg2)$deviance
 ```
+
 There is a small change in deviance but less than one.
 
-### Question 6
+## Question 6
 
 ```{r arm05-q06-1}
+
 # simulate latent values
 latent = rlogis(1E6, 1 + 2 * 1 + 3 * 0.5, 1)
 
@@ -206,22 +237,24 @@ dens <- tibble(late = density(latent)$x, dens = density(latent)$y)
 ```
 
 The proability that $y = 1$ is given by:
+
 $$
 \text{Pr}(y = 1) = 1 - \text{Pr}(y \leq 0) = \text{Pr}(\epsilon \leq -4.5)
 $$
+
 where $\epsilon \sim \text{Logistic}(0, 1)$.  Hence:
+
 $$
 \text{Pr}(\epsilon \leq -4.5) = 1 - \frac{1}{1 + e ^ {4.5}} = 0.989
 $$
 
 ```{r arm05-q06-2}
+
 # construct data for polygon where y = 1
 cutoff <- min(abs(dens$late))
-area <- rbind(
-  c(cutoff, 0),
-  filter(dens, late > 0),
-  c(max(dens$late), 0)
-)
+area <- tibble(late = cutoff, dens = 0) %>%
+  rbind(filter(dens, late > 0)) %>%
+  add_row(late = max(dens$late), dens = 0)
 
 # plot
 p <- ggplot(dens) +
@@ -230,7 +263,7 @@ p <- ggplot(dens) +
 p
 ```
 
-### Question 7
+## Question 7
 
 ```{r arm05-q07_}
 dat <- tibble(x = 1:20, y = rep(c(rep(1, 5), rep(0, 5)), 2))
@@ -239,14 +272,16 @@ reg <- glm(y ~ x, data = dat, family = binomial(link = 'logit'))
 summary(reg)
 ```
 
-### Question 8
+## Question 8
 
 Import the data:
+
 ```{r arm05-q08_}
 dat <- read_delim(str_c(arm_url, 'rodents/rodents.dat'), delim = ' ')
 ```
 
-#### (a)
+### (a)
+
 We will disregard race = 7 and treat the variable as categorical:
 
 ```{r arm05-q08a}
@@ -260,7 +295,7 @@ summary(reg)
 
 Non-whites have between approximately between an 8\% and 18\% higher probability of having rodents present.
 
-#### (b)
+### (b)
 
 ```{r arm05-q08b}
 reg <- glm(
@@ -271,14 +306,15 @@ reg <- glm(
 summary(reg)
 ```
 
-### Question 9
+## Question 9
 
-Import the dat:
+Import the data:
+
 ```{r arm05-q09_}
 dat <- read.table(str_c(arm_url, 'arsenic/wells.dat'))
 ```
 
-#### (a)
+### (a)
 
 ```{r arm05-q09a}
 reg <- glm(
@@ -289,7 +325,7 @@ reg <- glm(
 summary(reg)
 ```
 
-#### (b)
+### (b)
 
 ```{r arm05-q09b}
 dat <- dat %>%
@@ -307,9 +343,10 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (c)
+### (c)
 
 ```{r arm05-q09c}
+
 # bin the data
 bins <- quantile(dat$pred, probs = seq(0, 1, 0.01), na.rm = T)
 dat <- dat %>%
@@ -336,7 +373,7 @@ p <- ggplot(dat_bin) +
 p
 ```
 
-#### (d)
+### (d)
 
 ```{r arm05-q09d}
 x <- dat$pred > 0.5 & dat$switch == 0
@@ -348,12 +385,14 @@ names(e_null) <- NULL
 ```
 
 Using the error rates, there is only a modest improvement over the null model.
-#### (e)
+
+### (e)
+
 Skip
 
-### Question 10
+## Question 10
 
-####(a)
+### (a)
 
 ```{r arm05-q10a}
 reg <- glm(
@@ -368,7 +407,7 @@ cf <- coef(reg)
 
 The baseline probability of switching -- a distance of zero and the minimum arsenic level -- is `r 1 / (1 + exp(-cf[1] - cf[3] * min(log(dat$arsenic))))`.  A 100 meter increase in the distance to the nearest safe well is associated with a `r abs(cf[2] * 100 / 4)` change in the probability of switching.  A one percent increase in arsenic level is associated with a `r cf[3] / 4` change in the probability of switching.
 
-#### (b)
+### (b)
 
 ```{r arm05-q10b}
 p1 <- ggplot(dat) +
@@ -396,10 +435,11 @@ p2 <- ggplot(dat) +
 p2
 ```
 
-#### (c)
+### (c)
+
 Skip
 
-### Question 11
+## Question 11
 
 ```{r arm05-q11_}
 dat <- read_stata(str_c(arm_url, 'nes/nes5200_processed_voters_realideo.dta'))

@@ -3,9 +3,10 @@
 
 ## Overview
 
-This repository contains the code used in solutions to the exerices from
-[An Introduction to Statistical Learning with Applications in
-R](http://www-bcf.usc.edu/~gareth/ISL/)
+This repository contains code used in solutions to the exerices from [An
+Introduction to Statistical Learning with Applications in
+R](http://www-bcf.usc.edu/~gareth/ISL/) by Gareth James, Daniela Witten,
+Trevor Hastie and Robert Tibshirani.
 
 ## Chapters
 

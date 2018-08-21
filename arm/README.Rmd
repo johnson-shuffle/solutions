@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Overview
 
-This repository contains the code used in solutions to the exerices from [Data Analysis Using Regression and Multilevel/Hierarchical Models](http://www.stat.columbia.edu/~gelman/arm/)
+This repository contains code used in solutions to the exerices from [Data Analysis Using Regression and Multilevel/Hierarchical Models](http://www.stat.columbia.edu/~gelman/arm/) by Andrew Gelman and Jennifer Hill.
 
 ## Chapters
 

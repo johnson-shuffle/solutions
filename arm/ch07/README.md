@@ -1,31 +1,11 @@
----
-title: 'ARM: Chapter 7'
-output: html_document
----
+Simulation of probability models and statistical inferences
+================
 
-```{r arm07-pre, echo = F, message = F}
-knitr::opts_chunk$set(
-  cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
-  message = F,
-  warning = F
-  )
-library(arm)
-load_tidy()
+## Question 1
 
-# arm link
-arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
+### (a)
 
-# arm functions
-walk(list.files('./arm/arm_fun', full.names = T), source)
-```
-
-### Question 1
-
-#### (a)
-
-```{r arm07-q01a}
+``` r
 shots <- function(p) {
   s <- rbinom(2, 1, p)
   i <- 2
@@ -42,31 +22,45 @@ shots <- function(p) {
 }
 ```
 
-#### (b)
+### (b)
 
-```{r arm07-q01b}
+``` r
 shots_sims <- list()
 for (s in 1:1000) {
   shots_sims[[s]] <- shots(0.6)
 }
 n <- map_int(shots_sims, ~.x$n)
 mean(n)
+```
+
+    ## [1] 9.001
+
+``` r
 sd(n)
+```
+
+    ## [1] 7.730897
+
+``` r
 qplot(n, bins = 50)
 ```
 
-#### (c)
+![](../arm_fig/arm07-q01b-1.png)<!-- -->
 
-```{r arm07-q01c}
+### (c)
+
+``` r
 dat <- tibble(n = n, makes = map_int(shots_sims, ~sum(.x$shots)))
 dat %<>% mutate(success = makes / n)
 
 qplot(n, success, data = dat, geom = 'jitter')
 ```
 
-### Question 2
+![](../arm_fig/arm07-q01c-1.png)<!-- -->
 
-```{r arm07-q02_}
+## Question 2
+
+``` r
 m <- c(5.13, 0.17)
 f <- c(4.96, 0.20)
 x <- 1750
@@ -82,9 +76,11 @@ sims <- replicate(1E5, cable(10, male = m, female = f, threshold = x))
 table(sims)[[2]] / 1E5
 ```
 
-### Question 3
+    ## [1] 0.05497
 
-```{r arm07-q03_}
+## Question 3
+
+``` r
 widget <- c(5, 4)
 market <- c(4E4, 1E4)
 
@@ -94,15 +90,27 @@ savings <- function(widget, market) {
 
 sims <- replicate(1E5, savings(widget, market))
 mean(sims)
+```
+
+    ## [1] 199173.1
+
+``` r
 sd(sims)
+```
+
+    ## [1] 172697.4
+
+``` r
 qplot(sims, bins = 50)
 ```
 
-### Question 4
+![](../arm_fig/arm07-q03_-1.png)<!-- -->
 
-#### (a)
+## Question 4
 
-```{r arm07-q04a}
+### (a)
+
+``` r
 # reload chapter 3, question 5
 dat <- knitr::load_cache('arm03-q05_', 'dat')
 
@@ -135,39 +143,45 @@ for (s in 1:1000) {
 }
 ```
 
-#### (b)
+### (b)
 
-```{r arm07-q04b}
+``` r
 qplot(insA - insB, bins = 50)
+```
 
+![](../arm_fig/arm07-q04b-1.png)<!-- -->
+
+``` r
 # probability A > B
 table(insA > insB)[[2]] / 1000
 ```
 
-### Question 5
+    ## [1] 0.412
+
+## Question 5
 
 Skip
 
-### Question 6
+## Question 6
 
 Skip
 
-### Question 7
+## Question 7
 
 Skip
 
-### Question 8
+## Question 8
 
 Parameters for the problem:
 
-```{r arm07-q08_}
+``` r
 par1 <- c(100, 400, 50)
 par2 <- c(3, 1, 100)
 ```
 
-#### (a)
+### (a)
 
-```{r arm07-q08a}
+``` r
 dat <- tibble(
   cost = c(rnorm(1000, par1[1], par1[2]), par1[1] + par1[2] * rt(1000, par1[3])),
   efft = c(rnorm(1000, par2[1], par2[2]), par2[1] + par2[2] * rt(1000, par2[3])),
@@ -180,31 +194,51 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (b)
+![](../arm_fig/arm07-q08a-1.png)<!-- -->
 
-```{r arm07-q08b}
+### (b)
+
+``` r
 dat %<>%  mutate(ratio = cost / efft)
 
 # 50% interval (normal)
 quantile(filter(dat, dist == 'N')$ratio, probs = c(0.25, 0.75))
+```
 
+    ##      25%      75% 
+    ## -56.0406 132.1024
+
+``` r
 # 50% interval (t)
 quantile(filter(dat, dist == 't')$ratio, probs = c(0.25, 0.75))
+```
 
+    ##       25%       75% 
+    ## -51.81535 135.23522
+
+``` r
 # 95% interval (normal)
 quantile(filter(dat, dist == 'N')$ratio, probs = c(0.025, 0.975))
+```
 
+    ##      2.5%     97.5% 
+    ## -284.0655  477.1906
+
+``` r
 # 95% interval (t)
 quantile(filter(dat, dist == 't')$ratio, probs = c(0.025, 0.975))
 ```
 
-#### (c)
+    ##      2.5%     97.5% 
+    ## -329.7210  508.1659
+
+### (c)
 
 Skip
 
-### Question 9
+## Question 9
 
-```{r arm07-q09_}
+``` r
 library(VGAM)
 
 # reload chapter 6, question 5
@@ -239,35 +273,60 @@ p <- ggplot(dat) +
 p
 ```
 
-### Question 10
+![](../arm_fig/arm07-q09_-1.png)<!-- -->
 
-```{r arm07-q10_}
+## Question 10
+
+``` r
 # reload chapter 3, question 5
 dat <- knitr::load_cache('arm03-q05_', 'dat')
 reg <- knitr::load_cache('arm03-q05a', 'reg')
 display(reg)
 ```
 
-#### (a)
+    ## lm(formula = courseevaluation ~ btystdave + female + minority, 
+    ##     data = dat)
+    ##             coef.est coef.se
+    ## (Intercept)  4.11     0.03  
+    ## btystdave    0.15     0.03  
+    ## female      -0.19     0.05  
+    ## minority    -0.10     0.07  
+    ## ---
+    ## n = 463, k = 4
+    ## residual sd = 0.54, R-Squared = 0.07
 
-```{r arm07-q10a}
+### (a)
+
+``` r
 s0 <- sim(reg, n.sims = 10000)
 cat('est:', mean(coef(s0)[, 'btystdave']) , 'se:', sd(coef(s0)[, 'btystdave']))
 ```
 
-#### (b)
+    ## est: 0.148783 se: 0.03220351
 
-```{r arm07-q10b}
+### (b)
+
+``` r
 s1 <- sim(reg, n.sims = 1000)
 cat('est:', mean(coef(s1)[, 'btystdave']) , 'se:', sd(coef(s1)[, 'btystdave']))
+```
 
+    ## est: 0.1499408 se: 0.03155117
+
+``` r
 s2 <- sim(reg, n.sims = 100)
 cat('est:', mean(coef(s2)[, 'btystdave']) , 'se:', sd(coef(s2)[, 'btystdave']))
+```
 
+    ## est: 0.1493535 se: 0.02944106
+
+``` r
 s3 <- sim(reg, n.sims = 10)
 cat('est:', mean(coef(s3)[, 'btystdave']) , 'se:', sd(coef(s3)[, 'btystdave']))
 ```
 
-#### (c)
+    ## est: 0.1406273 se: 0.03081818
+
+### (c)
 
 100 simulations results in a good approximation.

@@ -1,13 +1,21 @@
 ---
-title: 'ARM: Chapter 8'
-output: html_document
+title: 'Simulation for checking statistical procedures and model fits'
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm08-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
@@ -21,9 +29,9 @@ arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 walk(list.files('./arm/arm_fun', full.names = T), source)
 ```
 
-### Question 1
+## Question 1
 
-#### (a)
+### (a)
 
 ```{r arm08-q01a}
 set.seed(1)
@@ -44,7 +52,7 @@ names(beta) <- names(coef(reg))
 
 The true coefficients are all covered by the 68\% confidence intervals.
 
-#### (b)
+### (b)
 
 ```{r arm08-q01b}
 sim_fun <- function(tpar, beta, level) {
@@ -64,7 +72,7 @@ n_sims <- replicate(1000, sim_fun(tpar, beta, 0.68))
 apply(n_sims, 1, mean)
 ```
 
-#### (c)
+## (c)
 
 ```{r arm08-q01c}
 library(hett)
@@ -87,22 +95,23 @@ n_sims <- replicate(1000, sim_fun(tpar, beta, 0.68))
 apply(n_sims, 1, mean)
 ```
 
-### Question 2
+## Question 2
 
 Skip 
 
-### Question 3
+## Question 3
 
 Skip
 
 ### Question 4
 
 ```{r arm08-q04_}
+
 # reload chapter 6, exercise 1
 dat <- knitr::load_cache('arm06-q01_', 'dat')
 ```
 
-#### (a)
+### (a)
 
 ```{r arm08-q04a}
 reg <- glm(fupacts ~ bs_hiv, family = poisson(link = 'log'), data = dat)
@@ -125,7 +134,7 @@ cat(n_sims[['zero']], 'vs', table(dat$fupacts == 0)[[2]] / nrow(dat))
 cat(n_sims[['five']], 'vs', table(dat$fupacts > tq)[[2]] / nrow(dat))
 ```
 
-#### (b)
+### (b)
 
 ```{r arm08-q04b}
 reg <- glm(fupacts ~ bs_hiv, family = quasipoisson(link = 'log'), data = dat)
@@ -145,7 +154,7 @@ cat(n_sims[['zero']], 'vs', table(dat$fupacts == 0)[[2]] / nrow(dat))
 cat(n_sims[['five']], 'vs', table(dat$fupacts > tq)[[2]] / nrow(dat))
 ```
 
-#### (b)
+### (b)
 
 ```{r arm08-q04c}
 reg <- glm(

@@ -1,7 +1,7 @@
 Linear regression: the basics
 ================
 
-### Question 1
+## Question 1
 
 Import the data:
 
@@ -9,7 +9,7 @@ Import the data:
 dat <- read_delim(str_c(arm_url, 'pyth/exercise2.1.dat'), delim = ' ')
 ```
 
-#### (a)
+### (a)
 
 ``` r
 reg <- lm(y ~ x1 + x2, data = dat[1:40, ]) ; summary(reg)
@@ -35,7 +35,7 @@ reg <- lm(y ~ x1 + x2, data = dat[1:40, ]) ; summary(reg)
     ## Multiple R-squared:  0.9724, Adjusted R-squared:  0.9709 
     ## F-statistic: 652.4 on 2 and 37 DF,  p-value: < 2.2e-16
 
-#### (b)
+### (b)
 
 ``` r
 dat_long <- gather(dat[1:40, ], covar, value, -y)
@@ -65,7 +65,7 @@ p
 
 ![](../arm_fig/arm03-q01b-1.png)<!-- -->
 
-#### (c)
+### (c)
 
 ``` r
 dat <- dat %>%
@@ -92,7 +92,7 @@ p2
 
 ![](../arm_fig/arm03-q01c-2.png)<!-- -->
 
-#### (d)
+### (d)
 
 ``` r
 p <- ggplot(dat) +
@@ -103,72 +103,54 @@ p
 
 ![](../arm_fig/arm03-q01d-1.png)<!-- -->
 
-### Question 2
+## Question 2
 
-#### (a)
+### (a)
 
-The log earnings model is given by:   
-![
-\\begin{aligned}
-\\ln(earnings) = a + b \\times \\ln(height)
-\\end{aligned}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Baligned%7D%0A%5Cln%28earnings%29%20%3D%20a%20%2B%20b%20%5Ctimes%20%5Cln%28height%29%0A%5Cend%7Baligned%7D%0A
-"
-\\begin{aligned}
-\\ln(earnings) = a + b \\times \\ln(height)
-\\end{aligned}
-")  
-The first two bullet points imply that ![a
-= 6.96](https://latex.codecogs.com/png.latex?a%20%3D%206.96 "a = 6.96")
-and ![b = 0.8](https://latex.codecogs.com/png.latex?b%20%3D%200.8
-"b = 0.8"). The third bullet point implies that:   
-![
-\\ln(y) \\leq \\ln(\\hat y) + 1.96 \\hat \\sigma \\\\
-](https://latex.codecogs.com/png.latex?%0A%5Cln%28y%29%20%5Cleq%20%5Cln%28%5Chat%20y%29%20%2B%201.96%20%5Chat%20%5Csigma%20%5C%5C%0A
-"
-\\ln(y) \\leq \\ln(\\hat y) + 1.96 \\hat \\sigma \\\\
-")  
-and also that:   
-![
-\\begin{align}
-y &\\leq 1.1 \\hat y \\\\
-\\ln(y) &\\leq \\ln(\\hat y) + \\ln(1.1)
-\\end{align}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign%7D%0Ay%20%26%5Cleq%201.1%20%5Chat%20y%20%5C%5C%0A%5Cln%28y%29%20%26%5Cleq%20%5Cln%28%5Chat%20y%29%20%2B%20%5Cln%281.1%29%0A%5Cend%7Balign%7D%0A
-"
-\\begin{align}
-y &\\leq 1.1 \\hat y \\\\
-\\ln(y) &\\leq \\ln(\\hat y) + \\ln(1.1)
-\\end{align}
-")  
-Combining we have:   
-![
-\\begin{align}
-1.96 \\hat \\sigma &= \\ln(1.1) \\\\
-\\hat \\sigma &= 0.0486276
-\\end{align}
-](https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign%7D%0A1.96%20%5Chat%20%5Csigma%20%26%3D%20%5Cln%281.1%29%20%5C%5C%0A%5Chat%20%5Csigma%20%26%3D%200.0486276%0A%5Cend%7Balign%7D%0A
-"
-\\begin{align}
-1.96 \\hat \\sigma &= \\ln(1.1) \\\\
-\\hat \\sigma &= 0.0486276
-\\end{align}
-")  
+The log earnings model is given by:
 
-#### (b)
+\[
+\begin{aligned}
+\ln(earnings) = a + b \times \ln(height)
+\end{aligned}
+\]
 
-Given that ![s = 0.5](https://latex.codecogs.com/png.latex?s%20%3D%200.5
-"s = 0.5") we have that:\`   
-![
-R^2 = 1 - \\frac{\\hat \\sigma^2}{s^2} = 0.0541409
-](https://latex.codecogs.com/png.latex?%0AR%5E2%20%3D%201%20-%20%5Cfrac%7B%5Chat%20%5Csigma%5E2%7D%7Bs%5E2%7D%20%3D%200.0541409%0A
-"
-R^2 = 1 - \\frac{\\hat \\sigma^2}{s^2} = 0.0541409
-")  
+The first two bullet points imply that \(a = 6.96\) and \(b = 0.8\). The
+third bullet point implies that:
 
-### Question 3
+\[
+\ln(y) \leq \ln(\hat y) + 1.96 \hat \sigma \\
+\]
 
-#### (a)
+and also that:
+
+\[
+\begin{align}
+y &\leq 1.1 \hat y \\
+\ln(y) &\leq \ln(\hat y) + \ln(1.1)
+\end{align}
+\]
+
+Combining we have:
+
+\[
+\begin{align}
+1.96 \hat \sigma &= \ln(1.1) \\
+\hat \sigma &= 0.0486276
+\end{align}
+\]
+
+### (b)
+
+Given that \(s = 0.5\) we have that:
+
+\[
+R^2 = 1 - \frac{\hat \sigma^2}{s^2} = 0.0541409
+\]
+
+## Question 3
+
+### (a)
 
 ``` r
 var1 <- rnorm(1000, 0, 1)
@@ -196,7 +178,7 @@ reg <- lm(var2 ~ var1) ; summary(reg)
 
 The slope coefficient is not statistically significant.
 
-#### (b)
+### (b)
 
 ``` r
 q3b <- function(trials) {
@@ -216,7 +198,7 @@ table(abs(dat) >= 2)['TRUE']
     ## TRUE 
     ##    6
 
-### Question 4
+## Question 4
 
 Import the data:
 
@@ -224,7 +206,7 @@ Import the data:
 dat <- read_stata(str_c(arm_url, 'child.iq/child.iq.dta'))
 ```
 
-#### (a)
+### (a)
 
 ``` r
 reg <- lm(ppvt ~ momage, data = dat) ; summary(reg)
@@ -292,7 +274,7 @@ alone, a mother should wait until as long as possible to have a child.
 Of course, this ingnores all sorts of other factors; for example, it
 becomes more difficult to get pregnant as a woman ages.
 
-#### (b)
+### (b)
 
 ``` r
 reg <- lm(ppvt ~ momage + educ_cat, data = dat) ; summary(reg)
@@ -324,7 +306,7 @@ category indicates that moving up one category is associated with an
 increase in test score of 4.711; this coefficent is significantly
 different from zero.
 
-#### (c)
+### (c)
 
 ``` r
 dat$momhs <- 0
@@ -379,7 +361,7 @@ p
 
 ![](../arm_fig/arm03-q04c-1.png)<!-- -->
 
-#### (d)
+### (d)
 
 ``` r
 reg <- lm(ppvt ~ momage + educ_cat, data = dat[1:200, ])
@@ -397,7 +379,7 @@ p
 
 ![](../arm_fig/arm03-q04d-1.png)<!-- -->
 
-### Question 5
+## Question 5
 
 Import the data:
 
@@ -405,7 +387,7 @@ Import the data:
 dat <- read_csv(str_c(arm_url, 'beauty/ProfEvaltnsBeautyPublic.csv'))
 ```
 
-#### (a)
+### (a)
 
 Without a description of the dataset it is difficult to come up with a
 model. Here we choose the standardized average beauty score, an
@@ -463,7 +445,7 @@ decline by 0.1033 for minority instructors.
 The residual standard error in this case is 0.537; this suggests that
 the model can predict course evaluation score to within a half a point.
 
-#### (b)
+### (b)
 
 Let’s consider one additional model where the interaction of the beauty
 score and the indicator for female is added as a predictator:

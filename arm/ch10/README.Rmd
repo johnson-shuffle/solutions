@@ -1,13 +1,21 @@
 ---
-title: 'ARM: Chapter 10'
-output: html_document
+title: 'Causal inference using more advanced models'
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm10-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
@@ -21,9 +29,9 @@ arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 walk(list.files('./arm/arm_fun', full.names = T), source)
 ```
 
-### Question 1
+## Question 1
 
-#### (a)
+### (a)
 
 Note that the experimental data can be loaded via the `arm` package.
 
@@ -43,9 +51,10 @@ reg_a <- lm(
 summary(reg_a)
 ```
 
-#### (b)
+### (b)
 
 ```{r arm10-q01b-1}
+
 # dehejia and wahba data
 dat <- read_stata(str_c(arm_url, 'lalonde/NSW.dw.obs.dta'))
 dat %<>% rename(nodegr = nodegree)
@@ -93,7 +102,7 @@ p <- ggplot(aes(factor(model), estimate), data = pdat) +
 p
 ```
 
-#### (c)
+### (c)
 
 ```{r arm10-q01c-1}
 mod <- 'treat ~ re74 + re75 + age + educ + black + hisp + married + nodegr
@@ -139,11 +148,11 @@ summary(reg_c)
 
 The results are quite close to the experimental benchmark.
 
-#### (d)
+### (d)
 
 For those eligible for the NSW program, participation -- on average -- caused an $`r round(coef(reg_c)['treat'], digits = 2)`  increase in 1978 earnings.
 
-#### (e)
+### (e)
 
 ```{r arm10-q01d-1}
 mod <- 'treat ~ re75 + age + educ + black + hisp + married + nodegr
@@ -189,13 +198,13 @@ summary(reg_d)
 
 Removing `re74` does impact the point estimate of the treatment effect but the benchmark value is still included in the 95% confidence interval.
 
-### Question 2
+## Question 2
 
-#### (a)
+### (a)
 
 Conceptually, a regression discontinuity framework seems appropriate.
 
-#### (b)
+### (b)
 
 ```{r arm10-q02b}
 dat <- read_delim(str_c(arm_url, 'bypass/bypass.data.txt'), delim = '\t')
@@ -208,7 +217,7 @@ p
 
 The plot above does not seem to support the regression discontinuity design; there is no apparent jump at the cutoff.  There is also partial overlap which could potentially make the design inappropriate.
 
-#### (c)
+### (c)
 
 ```{r arm10-q02c}
 lower <- min(dat$age[dat$new == 0])
@@ -231,11 +240,11 @@ summary(reg2)
 
 The first regression shows that the new procedure results in approximately one fewer day in the hospital; however, this effect is not statistically significant.  The second regression shows that the new procedure results in approximately five fewer days.  Clearly, severity is a confounder that needs to be controlled for.
 
-### Question 3
+## Question 3
 
 Rather than tell a specific story let's just simulate some data using the regression framework.
 
-#### (a)
+### (a)
 
 ```{r arm10-q03a}
 set.seed(1)
@@ -256,7 +265,7 @@ f4 <- lm(y ~ f3$fitted.values)
 coef(f4)[[2]]
 ```
 
-#### (b)
+### (b)
 
 ```{r arm10-q03b}
 set.seed(2)
@@ -272,7 +281,7 @@ f2 <- lm(y ~ z)
 coef(f2)[['z']] / coef(f1)[['z']]
 ```
 
-#### (c)
+### (c)
 
 ```{r arm10-q03c}
 set.seed(3)
@@ -288,20 +297,20 @@ f2 <- lm(y ~ z)
 coef(f2)[['z']] / coef(f1)[['z']]
 ```
 
-### Question 4
+## Question 4
 
-#### (a)
+### (a)
 
 Contributions are potentially an intermediate outcome since incumbency undoubtedly plays a role in how much money a candidate can raise.
 
-#### (b)
+### (b)
 
 The treatment variable would be money raised by the candidate and the outcome would be her corresponding vote share in the election.
 
-#### (c)
+### (c)
 
 Ignorability of the instrument is likely satisfied since incumbency is essentially randomly assigned for close elections (regression discontinuity design). The exclusion restriction will not be satisfied since incumbency is likely to have it's own direct effect on a candidate's vote share (indeed, this was explored in Exercise 9.13).
 
-#### (d)
+### (d)
 
 Candidate wealth could be used an instrument instead of incumbency; this would likely impact money raised by the candidate but perhaps not the votes they receive in the election.

@@ -1,13 +1,21 @@
 ---
-title: 'ARM: Chapter 4'
-output: html_document
+title: "Linear regression: before and after fitting the model"
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r arm04-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'arm_cache/',
-  fig.path = 'arm_fig/',
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
   message = F,
   warning = F
   )
@@ -18,13 +26,13 @@ load_tidy()
 arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
 ```
 
-### Question 1
+## Question 1
 
-#### (a)
+### (a)
 
 The factors are $e^{-0.25}$ and $e^{0.25}$.
 
-#### (b)
+### (b)
 
 Import the height data used in Chapter 4, simulate weights, and plot:
 
@@ -41,9 +49,9 @@ p <- ggplot(dat) +
 p
 ```
 
-### Question 2
+## Question 2
 
-#### (a)
+### (a)
 
 Remove missing values from the data:
 
@@ -51,7 +59,7 @@ Remove missing values from the data:
 dat <- na.omit(dat)
 ```
 
-#### (b)
+### (b)
 
 Center height:
 
@@ -63,11 +71,11 @@ reg <- lm(earn ~ height_c, data = dat) ; summary(reg)
 
 So a person of average height earns \$`r format(reg$coefficients[1], nsmall = 2, big.mark = ',')` on average.
 
-#### (c)
+### (c)
 
 Skip
 
-### Question 3
+## Question 3
 
 Create similar dataset and models:
 
@@ -91,7 +99,7 @@ reg2 <- lm(weight ~ age_10 + I(age_10 ^ 2), data = dat)
 reg3 <- lm(weight ~ age_bin, data = dat)
 ```
 
-#### (a) to (b)
+### (a) - (b)
 
 ```{r arm04-q03a}
 reg2_fun <- function(x) (-0.0157) / 100 * x ^ 2 + (-2.13) / 10 * x + 148
@@ -106,7 +114,7 @@ p <- ggplot(dat) +
 p
 ```
 
-#### (c)
+### (c)
 
 ```{r arm04-q03b}
 p <- ggplot(filter(dat, age_bin != '[0,18]')) + 
@@ -142,7 +150,7 @@ p <- ggplot(filter(dat, age_bin != '[0,18]')) +
 p
 ```
 
-### Question 4
+## Question 4
 
 Import the data:
 
@@ -150,7 +158,7 @@ Import the data:
 dat <- read_stata(str_c(arm_url, 'pollution/pollution.dta'))
 ```
 
-#### (a)
+### (a)
 
 ```{r arm04-q04a}
 p1 <- ggplot(dat) +
@@ -172,7 +180,7 @@ p2
 
 Linearity seems like a stretch here.  The outlier where nox is 319 results in a poor fit.  The residual plot confirms this approach is problematic.
 
-#### (b)
+### (b)
 
 Let's try using the log of nox:
 
@@ -197,11 +205,11 @@ p2
 
 This works better.
 
-#### (c)
+### (c)
 
 A one percent increase in nox is associated with an increase of mortality of `r format(reg$coefficients[2], nsmall = 1)`.
 
-#### (d)
+### (d)
 
 ```{r arm04-q04d}
 dat_long <- gather(dat, poll, value, hc:so2)
@@ -240,7 +248,7 @@ p2
 
 Given a single pollutant with the levels of the other two fixed (perhaps at their mean values), the coefficients correspond to the change in mortality for a one percent change in the given pollutant.
 
-#### (e)
+### (e)
 
 ```{r arm04-q04e}
 reg <- lm(mort ~ log(hc) + log(nox) + log(so2), data = dat[1:30, ]) ; summary(reg)
@@ -258,27 +266,27 @@ p <- ggplot(dat) +
 p
 ```
 
-### Question 5
+## Question 5
 
-#### (a)
+### (a)
 
 * This measure implicitly assumes that a dollar has the same impact on vote share across districts.  This is likely unrealistic; for example, advertising costs are likely to vary by district.
 * This measure improves on the last but may be problematic in uncontested districts; it also may be skewed by noncompetitive districts.
 * This measure improves on the last in terms of skewness but still may be problematic in uncontested districts.
 * This measure seems the best as it is standardized, ranging between 0 and 1, and has a clear demarcation at one half where the candidates raise equal amounts. 
 
-#### (b)
+### (b)
 
 One possiblity would be to use the last measure $M_i = D_i / (D_i + R_i)$ but introduce nonlinearity using polynomial transformations.
 
-### Question 6
+## Question 6
 
 This represents an elasticity.  Most likely the authors meant $\beta = -0.3$; economists often consider elasticities in absolute terms.  This means that a one percent increase in price is associated with a 0.3 percent decrease in quantity.  As expected, demand for cigarettes is inelastic.
 
-### Question 7
+## Question 7
 
 Skip
 
-### Question 8
+## Question 8
 
 Skip

@@ -3,9 +3,10 @@
 
 ## Overview
 
-This repository contains the code used in solutions to the exerices from
+This repository contains code used in solutions to the exerices from
 [Data Analysis Using Regression and Multilevel/Hierarchical
-Models](http://www.stat.columbia.edu/~gelman/arm/)
+Models](http://www.stat.columbia.edu/~gelman/arm/) by Andrew Gelman and
+Jennifer Hill.
 
 ## Chapters
 
