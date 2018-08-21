@@ -1,13 +1,21 @@
 ---
-title: "ISL: Chapter 4"
-output: html_document
+title: "Classification"
+author:
+date:
+always_allow_html: yes
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r isl04-pre, echo = F, message = F}
 knitr::opts_chunk$set(
   cache = T,
-  cache.path = 'isl_cache/',
-  fig.path = 'isl_fig/',
+  cache.path = '../isl_cache/',
+  fig.path = '../isl_fig/',
   message = F,
   warning = F
   )
@@ -15,9 +23,10 @@ library(ISLR)
 load_tidy()
 ```
 
-### Question 1
+## Question 1
 
 The proof is as follows:
+
 $$
 \begin{align}
 p(X) &= \frac{e^{\beta_0 + \beta_1 X}}{1 + e^{\beta_0 + \beta_1 X}} \\
@@ -27,89 +36,98 @@ p(X) &= (1 - p(X)) e^{\beta_0 + \beta_1 X} \\
 \end{align}
 $$
 
-### Question 2
+## Question 2
 
 Let $x$ remain fixed and observe that we are maximizing over the parameter $k$. Suppose that $\delta_k(x) \geq \delta_i(x)$. We will show that $f_k(x) \geq f_i(x)$. From our assumption we have:
+
 $$
 x \frac{\mu_k}{\sigma^2} - \frac{\mu_k^2}{2 \sigma^2} + \log(\pi_k) 
 \geq 
 x \frac{\mu_i}{\sigma^2} - \frac{\mu_i^2}{2 \sigma^2} + \log(\pi_i).
 $$
+
 Exponentiation is a monotonically increasing function, so the following inequality holds:
+
 $$
 \pi_k \exp (x \frac{\mu_k}{\sigma^2} - \frac{\mu_k^2}{2 \sigma^2}) 
 \geq 
 \pi_i \exp (x \frac{\mu_i}{\sigma^2} - \frac{\mu_i^2}{2 \sigma^2})
 $$
+
 Multipy this inequality by the positive constant:
+
 $$
 c = \frac{\frac{1}{\sqrt{2 \pi}\sigma} \exp(-\frac{1}{2 \sigma^2} x^2)} {\sum { \pi_l \frac{1}{\sqrt{2 \pi} \sigma} \exp(- \frac{1}{2 \sigma^2} (x - \mu_l)^2) }}
 $$
-and we have that 
+
+and we have that
+
 $$
 \frac {\pi_k \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_k)^2) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_l)^2) }}
 \geq
 \frac {\pi_i \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_i)^2) } {\sum { \pi_l \frac {1} {\sqrt{2 \pi} \sigma} \exp(- \frac {1} {2 \sigma^2} (x - \mu_l)^2) }}
 $$
 
-### Question 3
+## Question 3
 
 Skip
 
-### Question 4
+## Question 4
 
-#### (a)
+### (a)
 
 $0.1 ^ 1$
 
-#### (b)
+### (b)
 
 $0.1 ^ 2$
 
-#### (c)
+### (c)
 
 $0.1 ^ {100}$
 
-#### (d)
+### (d)
 
 Based on the above the reasoning is obvious.
 
-#### (e)
+### (e)
 
 For $p = 1$, the length is 1.  For $p = 2$, the length is $\sqrt{1}$. In general, the length is $1 ^ {\frac{1}{p}}$.
 
-### Question 5
+## Question 5
 
-#### (a)
+### (a)
 
 Given the decision boundary is linear, QDA will perform better on the training set while LDA will perform better on the test set. 
 
-#### (b)
+### (b)
 
 Given the decision boundary is non-linear, QDA will perform better on the training set and the test set.
 
-#### (c)
+### (c)
 
 In general, QDA's performance will increase with n.
 
-#### (d)
+### (d)
 
 False, QDA can still suffer from overfitting.
 
-### Question 6
+## Question 6
 
 We have $\beta_0 = -6$, $\beta_1 = 0.05$, and $\beta_2 = 1$.
 
-#### (a)
+### (a)
 
 Plugging into the equation:
+
 $$
 p(40, 3.5) = \frac{e^{-6 + 0.05 \cdot 40 + 1 \cdot 3.5}}{1 + e^{-6 + 0.05 \cdot 40 + 1 \cdot 3.5}} = 0.38
 $$
 
-#### (b)
+### (b)
 
 Let's use the log odds formula:
+
 $$
 \begin{align}
 \log \left(\frac{0.5}{1 - 0.5} \right) &= -6 + 0.05 \cdot X_1 + 1 \cdot 3.5 \\
@@ -118,19 +136,20 @@ X_1 &= 50
 \end{align}
 $$
 
-### Question 7
+## Question 7
 
 Skip
 
-### Question 8
+## Question 8
 
 The KNN classifier with $K = 1$ has zero training error which implies the test error rate for the classifier is 36%.  Hence, the logistic classifier performs better.
 
-### Question 9
+## Question 9
 
-#### (a)
+### (a)
 
 We need to solve the following for $p$:
+
 $$
 \begin{align}
 \frac{p}{1 - p} &= 0.37 \\
@@ -138,16 +157,17 @@ p &= \frac{0.37}{1 + 0.37}
 \end{align}
 $$
 
-#### (b)
+### (b)
 
 The odds are:
+
 $$
 q = \frac{0.16}{1 - 0.16}
 $$
 
-### Question 10
+## Question 10
 
-#### (a)
+### (a)
 
 ```{r isl04-q10a}
 library(MASS)
@@ -158,7 +178,7 @@ pairs(Weekly)
 
 There is a clear relationship between `Year` and `Volume`.
 
-#### (b)
+### (b)
 
 ```{r isl04-q10b}
 glm10 <- glm(
@@ -171,7 +191,7 @@ summary(glm10)
 
 `Lag2` is statistically significant.
 
-#### (c)
+### (c)
 
 ```{r isl04-q10c}
 prob10 <- predict(glm10, data = Weekly, type = 'response')
@@ -184,7 +204,7 @@ t10 <- table(pred10, Weekly$Direction)
 
 The classifier is correct 56.1\% of the time or has a training error rate of 43.9\%.
 
-#### (d)
+### (d)
 
 ```{r isl04-q10d}
 train  <- Weekly$Year <= 2008
@@ -205,7 +225,7 @@ t10d <- table(pred10d, testX$Direction)
   (t10d[1, 1] + t10d[2, 2] + t10d[1, 2] + t10d[2, 1])
 ```
 
-#### (e)
+### (e)
 
 ```{r isl04-q10e}
 lda10 <- lda(Direction ~ Lag2, data = trainX)
@@ -217,7 +237,7 @@ t10e <- table(pred10e, testX$Direction)
   (t10e[1, 1] + t10e[2, 2] + t10e[1, 2] + t10e[2, 1])
 ```
 
-#### (f)
+### (f)
 
 ```{r isl04-q10f}
 qda10 <- qda(Direction ~ Lag2, data = trainX)
@@ -229,7 +249,7 @@ t10f <- table(pred10f, testX$Direction)
   (t10f[1, 1] + t10f[2, 2] + t10f[1, 2] + t10f[2, 1])
 ```
 
-#### (g)
+### (g)
 
 ```{r isl04-q10g}
 set.seed(1)
@@ -244,24 +264,24 @@ t10g <- table(pred10g, Weekly$Direction[!train])
   (t10g[1, 1] + t10g[2, 2] + t10g[1, 2] + t10g[2, 1])
 ```
 
-#### (h)
+### (h)
 
 Logistic regressions and LDA have the highest classification rates.
 
-#### (i)
+### (i)
 
 Skip
 
-### Question 11
+## Question 11
 
-#### (a)
+### (a)
 
 ```{r isl04-q11a}
 mpg01 <- as.numeric(Auto$mpg >= median(Auto$mpg))
 dat <- cbind(Auto, mpg01)
 ```
 
-#### (b)
+### (b)
 
 ```{r isl04-q11b}
 pairs(dat)
@@ -272,7 +292,7 @@ qplot(factor(mpg01), weight, data = dat, geom = 'boxplot')
 
 `displacement`, `horsepower`, and `weight` all appear to be useful predictors.
 
-#### (c)
+### (c)
 
 ```{r isl04-q11c}
 library(caret)
@@ -282,7 +302,7 @@ trainX <- dat[train, ]
 testX  <- dat[-train, ]
 ```
 
-#### (d)
+### (d)
 
 ```{r isl04-q11d}
 lda <- lda(mpg01 ~ displacement + horsepower + weight, data = trainX)
@@ -290,7 +310,7 @@ pred <- predict(lda, newdata = testX)$class
 mean(pred != testX$mpg01)
 ```
 
-#### (e)
+### (e)
 
 ```{r isl04-q11e}
 qda <- qda(mpg01 ~ displacement + horsepower + weight, data = trainX)
@@ -298,7 +318,7 @@ pred <- predict(qda, newdata = testX)$class
 mean(pred != testX$mpg01)
 ```
 
-#### (f)
+### (f)
 
 ```{r isl04-q11f}
 glm11 <- glm(
@@ -311,7 +331,7 @@ pred <- prob >= 0.5
 mean(pred != testX$mpg01)
 ```
 
-#### (g)
+### (g)
 
 ```{r isl04-q11g}
 set.seed(1)
@@ -331,21 +351,21 @@ knn_fun(5)
 knn_fun(10)
 ```
 
-### Question 12
+## Question 12
 
-#### (a)
+### (a)
 
 ```{r isl04-q12a}
 Power <- function(x) {2 ^ 3}
 ```
 
-#### (b)
+### (b)
 
 ```{r isl04-q12b}
 Power2 <- function(x, a) { x ^ a }
 ```
 
-#### (c)
+### (c)
 
 ```{r isl04-q12c}
 Power2(10, 3)
@@ -353,13 +373,13 @@ Power2(8, 17)
 Power2(131, 3)
 ```
 
-#### (d)
+### (d)
 
 ```{r isl04-q12d}
 Power3 <- function(x, a) { out <- x ^ a ; return(out) }
 ```
 
-#### (e)
+### (e)
 
 ```{r isl04-q12e}
 x <- 1:10
@@ -368,13 +388,13 @@ qplot(x, y)
 qplot(x, y, log = 'xy')
 ```
 
-#### (f)
+### (f)
 
 ```{r isl04-q12f}
 PowerPlot <- function(x, a) { qplot(x, x ^ a) }
 ```
 
-### Question 13
+## Question 13
 
 ```{r isl04-q13}
 crim01 <- as.numeric(Boston$crim >= median(Boston$crim)) 
