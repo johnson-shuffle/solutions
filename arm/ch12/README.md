@@ -452,10 +452,10 @@ reg_sim_fun <- function(M, J) {
   
   tribble(
     ~M, ~J, ~param, ~est, ~se,
-    M, J, "b" , fixef(reg)[3], se.fixef(reg)[3],
+    M, J, "b" , fixef(reg)[2], se.fixef(reg)[2],
     M, J, "sy", sig$sdcor[2], 1,
     M, J, "g0", fixef(reg)[1], se.fixef(reg)[1], 
-    M, J, "g1", fixef(reg)[2], se.fixef(reg)[2],
+    M, J, "g1", fixef(reg)[3], se.fixef(reg)[3],
     M, J, "sa", sig$sdcor[1], 1
   )
   
@@ -560,8 +560,9 @@ display(reg_5N$reg)
 
 The unmodeled (or to be misleading “fixed”) coefficients, \(\beta\),
 \(\gamma_0\), and \(\gamma_1\), are similar. The individual- and
-group-level standard deviations are smaller in the one fifth sample. A
-graph is more suitable for comparision of the county-level intercepts:
+group-level standard deviations are smaller in the one fifth sample.
+
+A graph is more suitable for comparision of the county-level intercepts:
 
 ``` r
 # county-level intercepts: full sample
