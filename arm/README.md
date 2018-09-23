@@ -40,7 +40,8 @@ models](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch10)
 [Multilevel
 structures](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch11)
 
-Multilevel linear models: the basics
+[Multilevel linear models: the
+basics](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch12)
 
 Multilevel linear models: varying slopes, non-nested models, and other
 complexities
