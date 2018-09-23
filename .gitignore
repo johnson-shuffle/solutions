@@ -8,3 +8,4 @@
 *.DS_Store
 /arm/arm_cache
 /isl/isl_cache
+.Rproj.user
