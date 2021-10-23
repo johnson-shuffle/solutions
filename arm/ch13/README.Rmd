@@ -1,0 +1,193 @@
+---
+title: 'Multilevel linear models: varying slopes, non-nested models, and other complexities'
+author:
+date:
+always_allow_html: yes
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r arm13-pre, echo = F, message = F}
+knitr::opts_chunk$set(
+  cache = T,
+  cache.path = '../arm_cache/',
+  fig.path = '../arm_fig/',
+  message = F,
+  warning = F
+  )
+library(arm)
+library(hrbrthemes)
+library(stargazer)
+load_tidy()
+
+# arm link
+arm_url <- 'http://stat.columbia.edu/~gelman/arm/examples/'
+
+# arm functions
+walk(list.files('./arm/arm_fun', full.names = T), source)
+```
+
+## Question 1
+
+```{r arm13-q01_}
+
+# reload chapter 3, exercise 5
+dat <- knitr::load_cache('arm03-q05_', 'dat')
+
+```
+
+#### (a)
+
+The model is given by:
+
+$$
+\begin{align}
+y_i &\sim \text{N} \left( \alpha_{j[i]} + \beta_{j[i]} x_i + Z_i \Pi, \sigma_y^2 \right) \\
+\begin{matrix}
+  \alpha_j \\
+  \beta_j
+\end{matrix} &\sim \text{N}
+\left(
+  \begin{matrix}
+  \mu_{\alpha} \\
+  \mu_{\beta}
+  \end{matrix},
+  \begin{pmatrix}
+  \sigma_{\alpha}^2 & \rho \sigma_{\alpha} \sigma_{\beta} \\
+  \rho \sigma_{\alpha} \sigma_{\beta} & \sigma_{\beta}^2
+  \end{pmatrix}
+\right)
+\end{align}
+$$
+
+where $x_i$ is a measure of the professor's beauty and $Z_i$ contains indicators for whether the professor is female and whether the professor is a minority.  In this case, the grouping variable course is created using the class* indicators; data with no indicator were dropped.
+
+### (b)
+
+```{r arm13-q01b}
+
+# rename outcome variable and create id
+dat %<>%
+  rename(ce = courseevaluation) %>%
+  mutate(
+    id = 1:n()
+  )
+
+# create course category?
+category <- select(dat, id, starts_with("class"))
+category %<>% gather(course, value, -id)
+category %<>% filter(value != 0)
+category$course %<>% str_remove_all("class")
+category$course %<>% as.numeric()
+
+# join back category
+dat %<>% left_join(select(category, id, course), by = "id")
+
+# drop course = NA
+dat %<>% filter(!is.na(course))
+
+# fit the model
+reg <- lmer(
+  ce ~ btystdave + female + minority + (1 + btystdave | course),
+  data = dat
+  )
+display(reg)
+
+```
+
+In this model, the unexplained within-course variation has an estimated standard deviation of $\sigma_{ce} = 0.43$, the estimated standard deviation of the course intercepts is $\sigma_{course} = 0.33$ and the estimated standard deviation of the course slopes is $\sigma_{bystdave} = 0.17$.
+
+### (c)
+
+```{r arm13-q01c-1}
+
+# coefficients
+dat_coef <- coef(reg)$course %>%
+  rownames_to_column(var = "course") %>%
+  mutate_at(vars(course), as.numeric)
+
+# create new grouping
+dat %<>%
+  mutate(
+    female_minority = case_when(
+      female == 0 & minority == 0 ~ "White male",
+      female == 0 & minority == 1 ~ "Minority male",
+      female == 1 & minority == 0 ~ "White female",
+      TRUE ~ "Minority female"
+    )
+  )
+  
+# plot
+p <- ggplot() +
+  geom_point(
+    aes(x = btystdave, y = ce, colour = female_minority),
+    data = dat
+  ) +
+  geom_abline(
+    aes(intercept = `(Intercept)`, slope = btystdave),
+    data = dat_coef
+  ) +
+  scale_colour_ipsum() +
+  theme_ipsum() +
+  labs(x = "Beauty score", y = "Evaluation score", colour = "Type") +
+  facet_wrap(~course)
+p
+
+```
+
+```{r arm13-q01c-2}
+
+pdat <- bind_cols(
+  coef(reg)$course[, 1], 
+  ranef(reg)$course[, 1],
+  .name_repair = "unique"
+)
+names(pdat) <- c("est", "se")
+
+p <- ggplot(pdat, aes(x = factor(1:30), colour = factor(1:30))) +
+  geom_point(aes(y = est)) +
+  geom_errorbar(aes(ymin = est - 2 * se, ymax = est + 2 * se)) +
+  theme_ipsum() +
+  labs(x = "Course", y = "Intercept") +
+  guides(colour = F)
+p
+
+```
+
+```{r arm13-q01c-3}
+
+pdat <- bind_cols(
+  coef(reg)$course[, 2], 
+  ranef(reg)$course[, 2],
+  .name_repair = "unique"
+)
+names(pdat) <- c("est", "se")
+
+p <- ggplot(pdat, aes(x = factor(1:30), colour = factor(1:30))) +
+  geom_point(aes(y = est)) +
+  geom_errorbar(aes(ymin = est - 2 * se, ymax = est + 2 * se)) +
+  theme_ipsum() +
+  labs(x = "Course", y = "Slope") +
+  guides(colour = F)
+p
+
+```
+
+## Question 2
+
+### (a)
+
+### Question 3
+
+```{r arm13-q03_}
+
+# reload chapter 3, exercise 5
+dat <- knitr::load_cache('arm11-q03_', 'dat')
+
+```
+
+### (a)

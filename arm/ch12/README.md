@@ -1,6 +1,16 @@
 Multilevel linear models: the basics
 ================
 
+-   [Question 1](#question-1)
+-   [Question 2](#question-2)
+-   [Question 3](#question-3)
+-   [Question 4](#question-4)
+-   [Question 5](#question-5)
+-   [Question 6](#question-6)
+-   [Question 7](#question-7)
+-   [Question 8](#question-8)
+-   [Question 9](#question-9)
+
 ## Question 1
 
 Skip
@@ -279,15 +289,15 @@ p
 
 ## Question 5
 
-Let \(n_j\) denote the sample size in county \(j\). The new model is
-given by:
+Let *n*<sub>*j*</sub> denote the sample size in county *j*. The new
+model is given by:
 
-\[
-\begin{align}
-y_i &\sim \text{N} \left( \alpha_{j[i]} + \beta x_i, \sigma_y^2 \right) \\
-\alpha_j &\sim \text{N} \left(\gamma_0 + \gamma_1 u_j + \gamma_2 n_j, \sigma_{\alpha}^2 \right)
-\end{align}
-\]
+$$
+\\begin{align}
+y\_i &\\sim \\text{N} \\left( \\alpha\_{j\[i\]} + \\beta x\_i, \\sigma\_y^2 \\right) \\\\
+\\alpha\_j &\\sim \\text{N} \\left(\\gamma\_0 + \\gamma\_1 u\_j + \\gamma\_2 n\_j, \\sigma\_{\\alpha}^2 \\right)
+\\end{align}
+$$
 
 ``` r
 # load the data (note: this dataset can also be found in rstanarm)
@@ -406,8 +416,8 @@ display(reg_b)
 ### (c)
 
 Variation in ratings across evaluators for the same instructor is given
-by \(\sigma_y =\) 0.41 while the variation in average ratings across
-instructors is given by \(\sigma_{\alpha} =\) 0.36.
+by *σ*<sub>*y*</sub>= 0.41 while the variation in average ratings across
+instructors is given by *σ*<sub>*α*</sub>= 0.36.
 
 ## Question 7
 
@@ -417,15 +427,15 @@ Skip
 
 The following model is simulated:
 
-\[
-\begin{align}
-y_i &\sim \text{N} \left( \alpha_{j[i]} + \beta x_i^1, \sigma_y^2 \right) \\
-\alpha_j &\sim \text{N} \left(\gamma_0 + \gamma_1 x_j^2, \sigma_{\alpha}^2 \right)
-\end{align}
-\]
+$$
+\\begin{align}
+y\_i &\\sim \\text{N} \\left( \\alpha\_{j\[i\]} + \\beta x\_i^1, \\sigma\_y^2 \\right) \\\\
+\\alpha\_j &\\sim \\text{N} \\left(\\gamma\_0 + \\gamma\_1 x\_j^2, \\sigma\_{\\alpha}^2 \\right)
+\\end{align}
+$$
 
-with parameters: \(\beta\), \(\sigma_y\), \(\gamma_0\), \(\gamma_1\),
-and \(\sigma_{\alpha}\) all equaling five.
+with parameters: *β*, *σ*<sub>*y*</sub>, *γ*<sub>0</sub>,
+*γ*<sub>1</sub>, and *σ*<sub>*α*</sub> all equaling five.
 
 ``` r
 # helper function
@@ -558,8 +568,8 @@ display(reg_5N$reg)
     ## AIC = 390.8, DIC = 364.2
     ## deviance = 372.5
 
-The unmodeled (or to be misleading “fixed”) coefficients, \(\beta\),
-\(\gamma_0\), and \(\gamma_1\), are similar. The individual- and
+The unmodeled (or to be misleading “fixed”) coefficients, *β*,
+*γ*<sub>0</sub>, and *γ*<sub>1</sub>, are similar. The individual- and
 group-level standard deviations are smaller in the one fifth sample.
 
 A graph is more suitable for comparision of the county-level intercepts:

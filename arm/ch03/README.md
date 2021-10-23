@@ -1,6 +1,12 @@
 Linear regression: the basics
 ================
 
+-   [Question 1](#question-1)
+-   [Question 2](#question-2)
+-   [Question 3](#question-3)
+-   [Question 4](#question-4)
+-   [Question 5](#question-5)
+
 ## Question 1
 
 Import the data:
@@ -109,44 +115,44 @@ p
 
 The log earnings model is given by:
 
-\[
-\begin{aligned}
-\ln(earnings) = a + b \times \ln(height)
-\end{aligned}
-\]
+$$
+\\begin{aligned}
+\\ln(earnings) = a + b \\times \\ln(height)
+\\end{aligned}
+$$
 
-The first two bullet points imply that \(a = 6.96\) and \(b = 0.8\). The
+The first two bullet points imply that *a* = 6.96 and *b* = 0.8. The
 third bullet point implies that:
 
-\[
-\ln(y) \leq \ln(\hat y) + 1.96 \hat \sigma \\
-\]
+$$
+\\ln(y) \\leq \\ln(\\hat y) + 1.96 \\hat \\sigma \\\\
+$$
 
 and also that:
 
-\[
-\begin{align}
-y &\leq 1.1 \hat y \\
-\ln(y) &\leq \ln(\hat y) + \ln(1.1)
-\end{align}
-\]
+$$
+\\begin{align}
+y &\\leq 1.1 \\hat y \\\\
+\\ln(y) &\\leq \\ln(\\hat y) + \\ln(1.1)
+\\end{align}
+$$
 
 Combining we have:
 
-\[
-\begin{align}
-1.96 \hat \sigma &= \ln(1.1) \\
-\hat \sigma &= 0.0486276
-\end{align}
-\]
+$$
+\\begin{align}
+1.96 \\hat \\sigma &= \\ln(1.1) \\\\
+\\hat \\sigma &= 0.0486276
+\\end{align}
+$$
 
 ### (b)
 
-Given that \(s = 0.5\) we have that:
+Given that *s* = 0.5 we have that:
 
-\[
-R^2 = 1 - \frac{\hat \sigma^2}{s^2} = 0.0541409
-\]
+$$
+R^2 = 1 - \\frac{\\hat \\sigma^2}{s^2} = 0.0541409
+$$
 
 ## Question 3
 

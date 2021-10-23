@@ -43,8 +43,8 @@ structures](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch11)
 [Multilevel linear models: the
 basics](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch12)
 
-Multilevel linear models: varying slopes, non-nested models, and other
-complexities
+[Multilevel linear models: varying slopes, non-nested models, and other
+complexities](https://github.com/johnson-shuffle/solutions/tree/master/arm/ch13)
 
 Multilevel logistic regression
 

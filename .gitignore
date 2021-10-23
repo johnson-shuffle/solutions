@@ -7,5 +7,5 @@
 *.Ruserdata
 *.DS_Store
 /arm/arm_cache
+/arm/arm_data
 /isl/isl_cache
-.Rproj.user
